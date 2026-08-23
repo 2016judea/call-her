@@ -33,25 +33,12 @@
          padding:15px 22px; border-radius:11px; font-size:17px; }
   .cta:hover { filter:brightness(1.08); }
   .under { color:var(--faint); font-size:13.5px; margin:12px 0 0; }
+  .thread + .under { margin-top:14px; }
+  .thread + .under a { color:var(--dim); }
 
   h2 { font-size:13px; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
        color:var(--dim); margin:52px 0 18px; }
 
-  ol.steps { list-style:none; margin:0; padding:0; counter-reset:s; }
-  ol.steps > li { counter-increment:s; position:relative; padding-left:44px; padding-bottom:26px; }
-  ol.steps > li:last-child { padding-bottom:0; }
-  ol.steps > li::before {
-    content:counter(s); position:absolute; left:0; top:-1px;
-    width:27px; height:27px; border-radius:50%; background:#262220; color:var(--ink);
-    font-size:13px; font-weight:600; display:grid; place-items:center;
-  }
-  /* The rail joining the steps, so it reads as a sequence not a list. */
-  ol.steps > li:not(:last-child)::after {
-    content:""; position:absolute; left:13px; top:31px; bottom:4px; width:1px; background:var(--line);
-  }
-  ol.steps h3 { font-size:17.5px; margin:0 0 5px; font-weight:600; letter-spacing:-.01em; }
-  ol.steps p { margin:0; color:var(--dim); font-size:15px; }
-  ol.steps p + p { margin-top:7px; }
   kbd { font:inherit; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
         font-size:.92em; background:#0b0a09; border:1px solid var(--line);
         border-radius:5px; padding:1px 6px; color:var(--ink); }
@@ -94,40 +81,30 @@
   <p class="under">Free. No app to install, no account, nothing to log into.
   It runs inside a chat.</p>
 
-  <h2>How to start</h2>
-  <ol class="steps">
-    <li>
-      <h3>Message the bot</h3>
-      <p>Open <a href="https://t.me/callher_bot" style="color:var(--hot)">@callher_bot</a>
-      and send <kbd>/start</kbd>. It asks what your friends should see you as.</p>
-    </li>
-    <li>
-      <h3>Add it to the group chat you already have</h3>
-      <p>Don't make a new one. Open the group with the friends you'd text about
-      this anyway, add <kbd>@callher_bot</kbd> as a member, and send
-      <kbd>/claim</kbd> in it.</p>
-      <p>That group is your circle. Nobody gets added by anyone but themselves,
-      and nobody outside it ever sees a word.</p>
-    </li>
-    <li>
-      <h3>After a first date, text it</h3>
-      <p>A few sentences, however you'd write them. It goes to the group either
-      way &mdash; that's the whole point. The one question back is whether you
-      want to hear from them yet: <kbd>NOW</kbd> or <kbd>WAIT</kbd>.</p>
-    </li>
-    <li>
-      <h3>They talk. Two weeks later, you talk</h3>
-      <p><kbd>NOW</kbd> and their replies land as they come.</p>
-      <p><kbd>WAIT</kbd> posts the same entry with a line asking them to let you
-      decide first. You're in that group chat, so nothing can technically hide
-      their replies from you &mdash; but everyone can see the ask.</p>
-      <p>Two weeks after the date it asks <em>you</em>, on your own, what
-      happened. One update, and it's yours to give.</p>
-    </li>
-  </ol>
-
-  <h2>What it looks like</h2>
+  <h2>The whole thing, start to finish</h2>
   <div class="thread">
+    <div class="msg you"><span class="who">You</span>/start</div>
+    <div class="msg them"><span class="who">Call Her</span>This is Call Her. After a first date you text me how it went, and I put it in the group chat with the few friends you'd have told anyway. Two weeks later I ask you what you did.
+
+What should they see you as? Reply with a first name.</div>
+    <div class="msg you"><span class="who">You</span>Aidan</div>
+    <div class="msg them"><span class="who">Call Her</span>Got it, Aidan. Now your circle — the people you'd text anyway.
+
+Don't make a new group — add me to the one you already have with them:
+
+open that chat  -&gt;  add member  -&gt;  @CallHerBot
+
+then send  /claim  in it.</div>
+
+    <div class="gap">so you open the group you already have, and add it</div>
+
+    <div class="msg you"><span class="who">You &middot; in the group</span>/claim</div>
+    <div class="msg room"><span class="who">Your group</span>Bound. This is where I'll post Aidan's entries.
+
+Nothing for the rest of you to do — reply here like any group chat.</div>
+
+    <div class="gap">then you go on a date</div>
+
     <div class="msg you"><span class="who">You</span>Dinner at Owamni with the one who ordered the whole fish. Talked three hours, she laughed at the bad joke about my dog.</div>
     <div class="msg them"><span class="who">Call Her</span>Going to your 2. Their replies as they come, or should I ask them to let you decide first?
 
@@ -139,13 +116,19 @@ Reply NOW or WAIT.</div>
 
 Aidan isn't reading this till Sun Sep 6 — talk among yourselves.</div>
     <div class="msg room"><span class="who">Your group &middot; a friend</span>the fish thing is a green flag, obviously call her</div>
+
     <div class="gap">two weeks after the date</div>
+
     <div class="msg them"><span class="who">Call Her</span>Two weeks. Your turn — what happened? One line is plenty.</div>
     <div class="msg you"><span class="who">You</span>Called her Thursday. Dinner Saturday, she picked the place.</div>
     <div class="msg room"><span class="who">Your group</span>Aidan, two weeks on:
 
 "Called her Thursday. Dinner Saturday, she picked the place."</div>
   </div>
+  <p class="under">Every line the bot says up there is its real copy, lifted out of
+  <a href="https://github.com/2016judea/call-her/blob/main/lib/copy.js">lib/copy.js</a>
+  &mdash; not a mock-up.</p>
+
 
   <h2>The rules it keeps</h2>
   <dl>
