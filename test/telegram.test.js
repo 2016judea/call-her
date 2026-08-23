@@ -31,14 +31,16 @@ function rig() {
   const engine = createEngine({ db, channel, scrub, now: () => new Date(clock) });
   const flow = createTelegramFlow({ db, channel, engine });
 
+  let uid = 1000;
   return {
     db, sent, said, engine, flow,
-    dm:    (id, text) => flow.route({ message: {
-             text, from: { id }, chat: { id, type: 'private' } } }),
-    group: (id, text, chat = GROUP) => flow.route({ message: {
-             text, from: { id }, chat: { id: chat, type: 'supergroup' } } }),
-    evicted: (chat = GROUP) => flow.route({ my_chat_member: {
+    dm:    (id, text, update_id) => flow.route({ update_id: update_id ?? ++uid,
+             message: { text, from: { id }, chat: { id, type: 'private' } } }),
+    group: (id, text, chat = GROUP) => flow.route({ update_id: ++uid,
+             message: { text, from: { id }, chat: { id: chat, type: 'supergroup' } } }),
+    evicted: (chat = GROUP) => flow.route({ update_id: ++uid, my_chat_member: {
              chat: { id: chat }, new_chat_member: { status: 'left' } } }),
+    replay: (update) => flow.route(update),
     jump: async (days) => {
       clock = new Date(clock.getTime() + days * 86400000);
       return engine.tick();
@@ -55,6 +57,35 @@ async function setUp(r) {
   await r.group(ME, '/claim');
   return r;
 }
+
+test('a retried update is a no-op, not a second entry', async () => {
+  // Telegram retries any update it does not get a 200 for, so a platform-level
+  // timeout mid-handler would otherwise post the entry twice.
+  const r = await setUp(rig());
+  const update = {
+    update_id: 555,
+    message: { text: 'Dinner at Owamni with the one who ordered the whole fish, talked three hours',
+               from: { id: ME }, chat: { id: ME, type: 'private' } },
+  };
+  const first = await r.replay(update);
+  const repeat = await r.replay(update);
+
+  assert.equal(first.handled, 'engine');
+  assert.equal(repeat.handled, 'duplicate');
+  assert.equal(r.db._tables.entries.length, 1, 'the retry banked a second entry');
+  assert.equal(r.toldTo(ME).filter((m) => /NOW or WAIT/.test(m)).length, 1,
+    'the retry asked the question twice');
+});
+
+test('two different updates with the same text are both honoured', async () => {
+  // Dedupe must key on the update id, not the content — someone can genuinely
+  // send the same sentence twice.
+  const r = await setUp(rig());
+  await r.dm(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
+  await r.dm(ME, 'wait');
+  await r.dm(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
+  assert.equal(r.db._tables.entries.length, 2);
+});
 
 test('a Telegram user is never handed a join code', async () => {
   // The defect Aidan's first live test surfaced (2026-08-23): copy.handleSet

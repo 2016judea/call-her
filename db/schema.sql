@@ -48,3 +48,10 @@ create table if not exists messages (
 
 create index if not exists entries_due_post  on entries (post_at)  where posted_at is null;
 create index if not exists entries_due_chase on entries (chase_at) where chased_at is null;
+
+-- Telegram retries any update it does not get a 200 for; this makes a retry a
+-- no-op instead of a second journal entry.
+create table if not exists seen_updates (
+  id       bigint primary key,
+  seen_at  timestamptz not null default now()
+);

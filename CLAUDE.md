@@ -130,6 +130,16 @@ npm run bot                       # the real bot, off this laptop
 npm run webhook                   # point it back at production
 ```
 
+**Telegram delivers at least once.** Any update it does not get a 200 for is
+retried, so `lib/telegram-flow.js` records each `update_id` and treats a repeat as
+a no-op. The mark lands inside the same transaction as the work, so a rolled-back
+attempt is retried and a committed one never repeats. Without it, a platform-level
+timeout mid-handler posts the entry to the group twice.
+
+`vercel.json` sets `maxDuration` explicitly (60s webhook, 120s cron) rather than
+inheriting a default: a real entry spends 2–5s in the content guard plus a blob
+read and write, and a timeout is precisely what triggers the retry above.
+
 **`npm run bot` and the deployed webhook are mutually exclusive** — Telegram
 delivers to one or the other. `bin/local.js` refuses to start while a webhook is
 set, because polling would take production's updates and leave it silently deaf.

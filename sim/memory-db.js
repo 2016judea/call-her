@@ -12,6 +12,7 @@ export function memoryDb(seed) {
   const circles = seed?.circles ?? [];
   const entries = seed?.entries ?? [];
   const log     = seed?.log     ?? [];
+  const seen    = seed?.seen    ?? [];
   const high = (rows) => rows.reduce((m, r) => Math.max(m, r.id ?? 0), 0);
   let uid = high(users), cid = high(circles), eid = high(entries);
 
@@ -19,7 +20,7 @@ export function memoryDb(seed) {
 
   return {
     // exposed for assertions and the simulator's state dump
-    _tables: { users, circles, entries, log },
+    _tables: { users, circles, entries, log, seen },
 
     findUserByPhone: async (phone) => byPhone(phone),
     findUserByCode:  async (code) =>
@@ -111,6 +112,18 @@ export function memoryDb(seed) {
           if (c.owner_id === u.id && c.phone === `tgroup:${sid}`) c.status = 'removed';
         }
       }
+    },
+
+    /**
+     * Telegram is at-least-once: any update that does not get a 200 is retried,
+     * so a platform timeout mid-handler would otherwise post a second entry or
+     * send a second text. Recorded inside the same transaction as the work, so
+     * the mark and the effect commit together or not at all.
+     */
+    haveSeenUpdate: async (id) => seen.includes(id),
+    recordUpdate: async (id) => {
+      seen.push(id);
+      if (seen.length > 400) seen.splice(0, seen.length - 400);
     },
 
     logMessage: async (direction, peer, body) => { log.push({ direction, peer, body }); },
