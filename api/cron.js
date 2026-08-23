@@ -1,4 +1,5 @@
-// Daily pass: held entries come due, day-7 questions fire.
+// Daily pass: unanswered mode questions lapse into the room, two-week updates
+// are asked of their authors.
 //
 // Idempotent at the record level — every action is gated on its own marker
 // column — and atomic at the store level, so two overlapping runs cannot both
