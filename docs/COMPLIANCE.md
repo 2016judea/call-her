@@ -84,14 +84,21 @@ Do not resubmit and do not register a second brand to try again — that pattern
 is itself what `30898` and `30885` are looking for. Instead the product moves
 to a channel with no carrier gatekeeper:
 
-1. **Telegram bot** — real group chats, free, no registration, ~a day of work
-   against the same `lib/machine.js`. Everything in `lib/` except
-   `lib/twilio.js` is channel-agnostic on purpose; a Telegram adapter is a
-   drop-in replacement for that one file.
-2. **A web thread** — worst UX, zero gatekeeping, always available.
+1. **Telegram — already built and tested.** `lib/telegram.js`,
+   `lib/telegram-flow.js`, `api/telegram.js`, 11 tests. Free, real group chats,
+   no registration, no vetting, nobody's permission. Make a bot with
+   @BotFather, point its webhook at `/api/telegram`, done.
+2. **A web thread** — worst UX, zero gatekeeping, always available. Not built.
 
-The machine is deliberately separated from the transport so that a rejection
-costs you one adapter, not the product.
+The onboarding differs on Telegram because a bot cannot create a group or add
+anyone to one: the creator adds the bot to **the group chat they already have**
+with those friends, and sends `/claim` in it. That is closer to the original
+idea than SMS is, and consent is implicit — everyone in that room chose to be
+in it and can leave it themselves, so there is no invite handshake at all.
+
+Consider running the beta here **first**, regardless of how registration goes.
+It costs nothing, it can start today, and it tells you whether the loop is
+worth a phone number before you spend one.
 
 ## The recurring compliance surface
 
@@ -108,6 +115,7 @@ costs you one adapter, not the product.
 | `lib/scrub.js` request shape | reaches the API; rejected on **account credit**, not validation |
 | `lib/scrub.js` output quality | **not verified** — needs a funded key, then re-run the three-entry check |
 | `lib/twilio.js` | **not verified** — needs a registered number; group MMS cannot be tested without one |
+| Telegram channel | 11 tests over the real flow, green — but never pointed at a live bot |
 | Landing page | rendered and read at 390x664 and 1440x900 |
 
 The two unverified pieces are both blocked on money and paperwork, not code.

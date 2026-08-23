@@ -96,6 +96,18 @@ export function memoryDb() {
       if (u) { u.stopped_at = null; u.state = S.AWAITING_HANDLE; }
     },
 
+    findOwnerByRoom: async (sid) =>
+      users.find((u) => u.conversation_sid === sid) ?? null,
+    releaseRoom: async (sid) => {
+      for (const u of users.filter((x) => x.conversation_sid === sid)) {
+        u.conversation_sid = null;
+        u.state = S.BUILDING_CIRCLE;
+        for (const c of circles) {
+          if (c.owner_id === u.id && c.phone === `tgroup:${sid}`) c.status = 'removed';
+        }
+      }
+    },
+
     logMessage: async (direction, peer, body) => { log.push({ direction, peer, body }); },
   };
 

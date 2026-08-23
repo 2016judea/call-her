@@ -42,14 +42,32 @@ lib/machine.js    the entire product's logic, as one pure function
 lib/keywords.js   inbound classification (STOP wins, always)
 lib/copy.js       every outbound string, in one file
 lib/scrub.js      the guard: names out, explicit content refused
-lib/twilio.js     the only channel-specific file in the repo
-lib/db.js         queries, no decisions
+lib/engine.js     the whole request path: context -> machine -> effects
 lib/effects.js    performs what the machine decided
-api/sms.js        Twilio inbound webhook
-api/cron.js       daily: held entries come due, day-7 questions fire
+lib/db.js         queries, no decisions
+lib/twilio.js     channel: SMS + group MMS
+lib/telegram.js   channel: the fallback, no carrier registration needed
+lib/telegram-flow.js  the only channel-specific onboarding in the project
+api/sms.js        Twilio webhook          } thin shims
+api/telegram.js   Telegram webhook        } over
+api/cron.js       the daily pass          } lib/engine.js
 api/signup.js     the landing page's one endpoint
 public/index.html the site
+sim/              in-memory store + console channel, so the loop can be driven
 ```
+
+## Drive it
+
+No Twilio, no Postgres, no API key:
+
+```
+npm run sim      # scripted: both modes, a week jumped, the guards
+npm run repl     # type as any number;  /as <number>  /jump <days>  /state
+```
+
+The simulator runs `lib/engine.js` — the exact path production takes. Four
+defects came out of the first drive that no unit test would have found; see
+`git log`.
 
 `lib/machine.js` is pure — no network, no database, no clock beyond an injected
 `now`. Every consequence comes back as a declarative effect. This is deliberate:
@@ -59,7 +77,7 @@ lands), and none of those are testable against a live phone network and a
 seven-day timer.
 
 ```
-npm test        # 27 tests, no network, instant
+npm test        # 49 tests, no network, instant
 ```
 
 ## Rules with teeth
@@ -85,6 +103,14 @@ vercel dev
 
 Point the Twilio number's inbound webhook at `POST /api/sms`. The daily job is
 declared in `vercel.json` and runs at 17:00 UTC (noon Central).
+
+**Two channels.** SMS is the intended one and depends on carrier campaign
+approval that can be refused outright — read
+[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) before registering anything.
+Telegram needs no registration, no money, and real group chats: make a bot with
+@BotFather, point its webhook at `/api/telegram`, and the creator adds it to the
+group chat they already have. Both channels run the same engine; only the
+onboarding differs, because a bot cannot create a group or add anyone to one.
 
 Design notes: [`docs/superpowers/specs/2026-08-23-call-her-design.md`](docs/superpowers/specs/2026-08-23-call-her-design.md)
 

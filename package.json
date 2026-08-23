@@ -10,7 +10,9 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "sim": "node sim/drive.js",
+    "repl": "node sim/drive.js --repl"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
