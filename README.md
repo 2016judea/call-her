@@ -1,134 +1,35 @@
-# Call Her
+Call Her. A Dating App. 
 
-You text it after a first date. It puts your entry in a group text with the few
-friends you'd have told anyway. A week later it asks you, in front of them,
-whether you called her.
+After every first date you journal about it. 
 
-Free, and it stays free.
+It’s shared only to your closest friends.
 
-**There is no app and no product UI.** The whole thing lives in Messages. The
-website exists to explain it, take your number, and hand you one line to paste
-into the group chat you already have.
+Rules:
+1. The creator is allowed to give one update on what they ended up doing — eg. “what happened”
+2. But it’s for small groups. Just your buddies. The handful of people you let in. And it’s primarily geared at improving things. 
+    1. Journaling is good. 
+    2. You basically already do this when you text your two friends. 
+    3. Why not make it a group chat?
 
-## The loop
+What do the people think? Reply in the comments if you have the Substack app so everyone can see everyone else’s opinion lol. 
 
-```
-You  ->  Coffee at Spyhouse with the architect. Talked three hours.
+PPS. 
+I wanna fuel creative discourse, is truly what I’m realizing here.
 
-Us   ->  Got it. Open it to your 4 now, or hold it a week so you
-         decide first?  Reply NOW or WAIT.
+I should just post my first date experiences here on Substack and ask my community what they think. Upvote or downvote 😂
 
-You  ->  wait
+But would want to avoid that becoming toxic. Or reflecting poorly on the other because it’s public, and anyone can read it.
+Which is why I need somewhere to have small group discussions.
+And dating is the perfect case study for this concept!!🦕
 
-Us   ->  Held. Your circle sees it Sunday — until then the call is
-         yours alone.
+I think the author of the “first date experience” should have to post it, and be locked out for 2 weeks before they can give the “what happened” — to avoid the scenario where they get talked out of it by their friends. But then again, maybe some people want their friends’ opinion to help them decide. [Need feature for this]
 
-         ... 7 days ...
+Platform is free. For public benefit. I could host it for free on Vercel and Notion. It’s not about the money. It’s about incentivizing men to “call the damn girl back.” 
 
-Us   ->  Your entry goes to the circle today. Before it does:
-         what happened?
-```
+I feel like this is common amongst my friends, girls I know who are so frustrated with men. “We had a great time, why hasn’t he called me?”
 
-`NOW` opens it immediately and, seven days later, asks the group whether you
-called. `WAIT` holds the entry for a week so nobody can talk you out of a
-decision you haven't made yet, then posts the entry and the outcome together.
+And I don’t think you should text a girl to ask her out. Prefer to do it in person, but many times I don’t see her again. In which case, calling is appropriate. 
+—-
+@Claude > what is the UX for this? Is it a website with a sexy design? Or a mobile app? Is there a way to manage this headless and have people send a text to a phone number/contact in their phone? Eg. — no app, no website. You finish your first date and text us your journal entry and we process it and make a group chat with you and your configured “small group”. If you have opted into feedback immediately after your date you will see your buddies replies as they come in. If you have opted out you will see them 1 week later. I think this might be the ideal interface honestly. People don’t like websites. Or apps. But if you could chat with our “agent” natively in Text Messages it’s so much easier for users. We spend much of our day inside texts (which some people don’t like, but it’s human-native. Even our grandparents know how to text in today’s world). Minimum viable friction. 
 
-The journaling is the hook. **The day-7 question is the mechanism.**
-
-## Layout
-
-```
-lib/machine.js    the entire product's logic, as one pure function
-lib/keywords.js   inbound classification (STOP wins, always)
-lib/copy.js       every outbound string, in one file
-lib/scrub.js      the guard: names out, explicit content refused
-lib/engine.js     the whole request path: context -> machine -> effects
-lib/effects.js    performs what the machine decided
-lib/db.js         queries, no decisions
-lib/twilio.js     channel: SMS + group MMS
-lib/telegram.js   channel: the fallback, no carrier registration needed
-lib/telegram-flow.js  the only channel-specific onboarding in the project
-api/sms.js        Twilio webhook          } thin shims
-api/telegram.js   Telegram webhook        } over
-api/cron.js       the daily pass          } lib/engine.js
-api/signup.js     the landing page's one endpoint
-public/index.html the site
-sim/              in-memory store + console channel, so the loop can be driven
-```
-
-## Drive it
-
-No Twilio, no Postgres, no API key:
-
-```
-npm run sim      # scripted: both modes, a week jumped, the guards
-npm run repl     # type as any number;  /as <number>  /jump <days>  /state
-```
-
-The simulator runs `lib/engine.js` — the exact path production takes. Four
-defects came out of the first drive that no unit test would have found; see
-`git log`.
-
-`lib/machine.js` is pure — no network, no database, no clock beyond an injected
-`now`. Every consequence comes back as a declarative effect. This is deliberate:
-everything that can go wrong in this product is a sequencing bug (a question
-that fires twice, an entry posted to a circle of zero, a held entry that never
-lands), and none of those are testable against a live phone network and a
-seven-day timer.
-
-```
-npm test        # 49 tests, no network, instant
-```
-
-## Rules with teeth
-
-1. **Never a full name.** Every entry passes a model before relay; names of
-   other people become handles. *She didn't sign up for this.*
-2. **Explicit content is refused, not filtered — and the check fails closed.**
-   One SHAFT flag kills the number for every user at once.
-3. **Nobody joins a circle without texting us first.** No number is added from
-   a form. Inbound consent is the record carriers require.
-4. **STOP is handled before all application state and before any model call.**
-5. **Read [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) before registering
-   anything.** The registration is less reversible than any code here.
-
-## Run the real bot with no infrastructure
-
-```
-npm run bot
-```
-
-Long-polls `getUpdates` instead of taking a webhook, so it needs no public URL,
-no deploy and no Postgres — state lives in `.local-store.json` and survives
-restarts. Everything else is production code: the real Bot API, the real content
-guard, the same `lib/engine.js` the webhook would call. Enough to put the loop
-on real phones before any infrastructure exists.
-
-While it is not running the bot simply does not answer; Telegram queues updates
-for about a day and they are picked up on restart.
-
-## Running it
-
-```bash
-cp .env.example .env        # Twilio, Neon, Anthropic, a cron secret
-psql "$DATABASE_URL" -f db/schema.sql
-npm install && npm test
-vercel dev
-```
-
-Point the Twilio number's inbound webhook at `POST /api/sms`. The daily job is
-declared in `vercel.json` and runs at 17:00 UTC (noon Central).
-
-**Two channels.** SMS is the intended one and depends on carrier campaign
-approval that can be refused outright — read
-[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) before registering anything.
-Telegram needs no registration, no money, and real group chats: make a bot with
-@BotFather, point its webhook at `/api/telegram`, and the creator adds it to the
-group chat they already have. Both channels run the same engine; only the
-onboarding differs, because a bot cannot create a group or add anyone to one.
-
-Design notes: [`docs/superpowers/specs/2026-08-23-call-her-design.md`](docs/superpowers/specs/2026-08-23-call-her-design.md)
-What actually happened while building it, including what is still unproven:
-[`docs/journal/2026-08-23-build.md`](docs/journal/2026-08-23-build.md)
-
-MIT.
+Maximum reasoning enabled.
