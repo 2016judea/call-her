@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
+    "test:live": "node --test test/scrub.live.test.js",
     "dev": "vercel dev",
     "sim": "node sim/drive.js",
     "repl": "node sim/drive.js --repl"

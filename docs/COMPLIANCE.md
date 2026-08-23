@@ -112,10 +112,16 @@ worth a phone number before you spend one.
 | Piece | State |
 |---|---|
 | `lib/machine.js`, `lib/keywords.js`, `lib/phone.js` | 27 tests, green |
-| `lib/scrub.js` request shape | reaches the API; rejected on **account credit**, not validation |
-| `lib/scrub.js` output quality | **not verified** — needs a funded key, then re-run the three-entry check |
+| `lib/scrub.js` | **verified live** against claude-opus-5 — 6 tests, `npm run test:live` |
 | `lib/twilio.js` | **not verified** — needs a registered number; group MMS cannot be tested without one |
 | Telegram channel | 11 tests over the real flow, green — but never pointed at a live bot |
 | Landing page | rendered and read at 390x664 and 1440x900 |
 
-The two unverified pieces are both blocked on money and paperwork, not code.
+The guard was run against the real model on 2026-08-23 and had two defects that
+only showed up there: it invented "the girl from the app" about someone met in
+person, then over-corrected and deleted a real detail. Both are pinned by tests
+now. Latency is 2-5s per entry, which is fine for a text reply.
+
+What remains unverified is the transport: `lib/twilio.js` needs a registered
+number, and the Telegram adapter needs a live bot token. Both are blocked on
+paperwork and a 60-second BotFather chat, not on code.
