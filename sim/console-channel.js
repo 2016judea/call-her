@@ -20,6 +20,9 @@ export function consoleChannel({ number = '+16125550100', quiet = false } = {}) 
 
   return {
     ourNumber: number,
+    canInviteByCode: true,
+    inviteHow: (code) =>
+      `Send them this:\n"Text  join ${code}  to ${number}"\n\nUp to 8.`,
     _sent: sent, _said: said, _rooms: rooms,
 
     async send(to, body) {

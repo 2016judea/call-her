@@ -48,15 +48,18 @@ lib/copy.js       every outbound string, in one file
 lib/scrub.js      the guard: names out, explicit content refused
 lib/engine.js     the whole request path: context -> machine -> effects
 lib/effects.js    performs what the machine decided
-lib/db.js         queries, no decisions
+lib/blob-db.js    the LIVE store: one JSON doc in Vercel Blob, CAS transactions
+lib/snapshot.js   JSON round-trip; revives dates so held entries still come due
+lib/db.js         the Postgres store (same contract, unused while Telegram ships)
 lib/twilio.js     channel: SMS + group MMS
 lib/telegram.js   channel: the fallback, no carrier registration needed
 lib/telegram-flow.js  the only channel-specific onboarding in the project
-api/sms.js        Twilio webhook          } thin shims
-api/telegram.js   Telegram webhook        } over
-api/cron.js       the daily pass          } lib/engine.js
-api/signup.js     the landing page's one endpoint
-public/index.html the site
+api/telegram.js   Telegram webhook  (LIVE) } thin shims
+api/sms.js        Twilio webhook    (dark)  } over
+api/cron.js       the daily pass            } lib/engine.js
+public/index.html the walkthrough at call-her.vercel.app
+bin/local.js      run the real bot off this laptop, no deploy
+bin/webhook.js    point the bot at production
 sim/              in-memory store + console channel, so the loop can be driven
 ```
 
@@ -111,17 +114,43 @@ on real phones before any infrastructure exists.
 While it is not running the bot simply does not answer; Telegram queues updates
 for about a day and they are picked up on restart.
 
-## Running it
+## Live
+
+- **Site:** https://call-her.vercel.app
+- **Bot:** [@callher_bot](https://t.me/callher_bot) → webhook at `/api/telegram`
+- **Store:** Vercel Blob (`call-her-store`), one JSON document at
+  `call-her/store.json`
+- **Daily pass:** `vercel.json` cron, 17:00 UTC (noon Central)
 
 ```bash
-cp .env.example .env        # Twilio, Neon, Anthropic, a cron secret
-psql "$DATABASE_URL" -f db/schema.sql
-npm install && npm test
-vercel dev
+npx vercel env pull .env.vercel   # BLOB_READ_WRITE_TOKEN
+npm test                          # 52, free, instant
+npm run test:live                 # 6, needs ANTHROPIC_API_KEY, costs money
+npm run bot                       # the real bot, off this laptop
+npm run webhook                   # point it back at production
 ```
 
-Point the Twilio number's inbound webhook at `POST /api/sms`. The daily job is
-declared in `vercel.json` and runs at 17:00 UTC (noon Central).
+**`npm run bot` and the deployed webhook are mutually exclusive** — Telegram
+delivers to one or the other. `bin/local.js` refuses to start while a webhook is
+set, because polling would take production's updates and leave it silently deaf.
+`--take-over` overrides, and `npm run webhook` puts it back.
+
+### Why Blob and not Postgres
+
+The data is a few kilobytes and the write rate is a few per person per week.
+Vercel Blob is included on Pro, needs no provisioning, no connection pooling and
+no cold-start wake. Redis and Postgres are both Marketplace integrations now and
+**cannot be created from the API** (`redis` → `not_found`, `postgres` → `gone`,
+checked 2026-08-23), so either would have needed a dashboard click.
+
+It is safe because Blob supports conditional writes: `lib/blob-db.js` reads the
+document with its ETag, runs the whole update, and commits with `ifMatch`. A
+commit that raced another fails and retries against fresh state rather than
+clobbering it. **Outbound messages are buffered until the commit lands** — without
+that, a retry would text everyone twice.
+
+`lib/db.js` still implements the identical contract against Postgres, so moving
+is one import.
 
 **Two channels.** SMS is the intended one and depends on carrier campaign
 approval that can be refused outright — read

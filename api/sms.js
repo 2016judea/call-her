@@ -1,4 +1,10 @@
 // Twilio inbound webhook. A shim over lib/engine.js — no logic of its own.
+//
+// NOT the live channel. SMS needs carrier campaign approval that can be refused
+// permanently (docs/COMPLIANCE.md); Telegram is what ships. This is kept working
+// so that registration, if it ever happens, is a configuration step and not a
+// rewrite. It still expects Postgres via lib/db.js — the Blob store the Telegram
+// path uses would be the swap.
 
 import { createEngine } from '../lib/engine.js';
 import { normalize } from '../lib/phone.js';

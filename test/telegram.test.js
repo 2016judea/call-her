@@ -17,6 +17,9 @@ function rig() {
   let clock = new Date('2026-08-23T23:42:00-05:00');
   const channel = {
     ourNumber: '@CallHerBot',
+    canInviteByCode: false,
+    inviteHow: () => "Don't make a new group — add me to the one you already " +
+      'have with them, then send  /claim  in it.',
     asId: (id) => `tg:${id}`,
     send: async (to, body) => { sent.push({ to, body }); },
     sayInRoom: async (sid, body) => { said.push({ sid: String(sid), body }); },
@@ -52,6 +55,37 @@ async function setUp(r) {
   await r.group(ME, '/claim');
   return r;
 }
+
+test('a Telegram user is never handed a join code', async () => {
+  // The defect Aidan's first live test surfaced (2026-08-23): copy.handleSet
+  // hardcoded the SMS answer, so the bot replied  "Text join 4k4v to
+  // @CallHerBot"  — a code that does nothing on this channel.
+  const r = rig();
+  await r.dm(ME, '/start');
+  await r.dm(ME, 'Aidan');
+  const said = r.toldTo(ME).at(-1);
+  assert.doesNotMatch(said, /join\s+[a-z0-9]{4}/i, `handed out a join code: ${said}`);
+  assert.match(said, /\/claim/, 'did not say how to actually do it');
+});
+
+test('a join code is refused here rather than crashing on createRoom', async () => {
+  // And if someone followed that copy anyway: YES would reach add_to_room ->
+  // room() -> createRoom(), which throws on this channel by design.
+  const r = await setUp(rig());
+  await r.dm(OTHER, 'join abcd');
+  assert.match(r.toldTo(OTHER).at(-1), /not how it works on this one/);
+  assert.equal(r.db._tables.circles.filter((c) => c.phone === `tg:${OTHER}`).length, 0);
+});
+
+test('the drained-circle message also says how to fix it, per channel', async () => {
+  const r = await setUp(rig());
+  await r.evicted();
+  await r.dm(ME, 'Coffee at Spyhouse with the architect, talked three hours');
+  const said = r.toldTo(ME).at(-1);
+  assert.match(said, /nobody in your circle yet/);
+  assert.match(said, /\/claim/, 'told them the problem but not the remedy');
+  assert.doesNotMatch(said, /join\s+[a-z0-9]{4}/i);
+});
 
 test('a creator binds the group chat they already have', async () => {
   const r = await setUp(rig());

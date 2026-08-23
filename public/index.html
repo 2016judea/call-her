@@ -4,98 +4,81 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Call Her</title>
-<meta name="description" content="You text us after a date. It goes to a few friends. A week later we ask if you followed through.">
+<meta name="description" content="You text it after a first date. It goes to a few friends. A week later it asks, in front of them, whether you called.">
+<meta property="og:title" content="Call Her">
+<meta property="og:description" content="You text it after a first date. It goes to a few friends. A week later it asks, in front of them, whether you called.">
+<meta property="og:type" content="website">
 <style>
   :root {
-    --ink: #f4f1ec;
-    --dim: #9a948c;
-    --bg: #0e0d0c;
-    --card: #171513;
-    --line: #2b2825;
-    --hot: #e8623c;
+    --ink:#f4f1ec; --dim:#9a948c; --faint:#6b6660;
+    --bg:#0e0d0c; --card:#171513; --line:#2b2825; --hot:#e8623c;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing:border-box; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.5 ui-sans-serif, -apple-system, "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    padding: 28px 20px 56px;
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.55 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
+    -webkit-font-smoothing:antialiased; padding:28px 20px 64px;
   }
-  main { max-width: 940px; margin: 0 auto; }
+  main { max-width:44rem; margin:0 auto; }
+  h1 { font-size:15px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+       color:var(--dim); margin:0 0 26px; }
 
-  h1 {
-    font-size: 15px; font-weight: 600; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--dim); margin: 0 0 26px;
-  }
-  .lede {
-    font-size: 27px; line-height: 1.24; font-weight: 500;
-    letter-spacing: -.02em; margin: 0 0 12px; max-width: 20ch;
-  }
-  .lede b { color: var(--hot); font-weight: 500; display: block; }
-  .sub { color: var(--dim); margin: 0 0 34px; max-width: 34ch; }
+  .lede { font-size:27px; line-height:1.24; font-weight:500; letter-spacing:-.02em;
+          margin:0 0 14px; max-width:21ch; }
+  .lede b { color:var(--hot); font-weight:500; display:block; }
+  .sub { color:var(--dim); margin:0 0 30px; max-width:36ch; }
 
-  .split { display: grid; gap: 14px; }
-  @media (min-width: 760px) {
-    body { padding-top: 56px; }
-    .lede { font-size: 40px; max-width: 24ch; }
-    .split { grid-template-columns: 1fr 1fr; gap: 18px; }
-  }
+  .cta { display:inline-flex; align-items:center; gap:10px; text-decoration:none;
+         background:var(--hot); color:#16100e; font-weight:600;
+         padding:15px 22px; border-radius:11px; font-size:17px; }
+  .cta:hover { filter:brightness(1.08); }
+  .under { color:var(--faint); font-size:13.5px; margin:12px 0 0; }
 
-  .card {
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; padding: 22px;
-  }
-  .card h2 {
-    font-size: 17px; margin: 0 0 6px; font-weight: 600; letter-spacing: -.01em;
-  }
-  .card p { color: var(--dim); font-size: 14.5px; margin: 0 0 18px; }
+  h2 { font-size:13px; font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+       color:var(--dim); margin:52px 0 18px; }
 
-  ol { margin: 0 0 20px; padding-left: 0; list-style: none; counter-reset: s; }
-  ol li {
-    counter-increment: s; position: relative; padding-left: 30px;
-    margin-bottom: 9px; font-size: 14.5px; color: var(--dim);
+  ol.steps { list-style:none; margin:0; padding:0; counter-reset:s; }
+  ol.steps > li { counter-increment:s; position:relative; padding-left:44px; padding-bottom:26px; }
+  ol.steps > li:last-child { padding-bottom:0; }
+  ol.steps > li::before {
+    content:counter(s); position:absolute; left:0; top:-1px;
+    width:27px; height:27px; border-radius:50%; background:#262220; color:var(--ink);
+    font-size:13px; font-weight:600; display:grid; place-items:center;
   }
-  ol li::before {
-    content: counter(s); position: absolute; left: 0; top: 1px;
-    width: 19px; height: 19px; border-radius: 50%;
-    background: #262220; color: var(--ink);
-    font-size: 11px; font-weight: 600;
-    display: grid; place-items: center;
+  /* The rail joining the steps, so it reads as a sequence not a list. */
+  ol.steps > li:not(:last-child)::after {
+    content:""; position:absolute; left:13px; top:31px; bottom:4px; width:1px; background:var(--line);
   }
-  ol li b { color: var(--ink); font-weight: 500; }
+  ol.steps h3 { font-size:17.5px; margin:0 0 5px; font-weight:600; letter-spacing:-.01em; }
+  ol.steps p { margin:0; color:var(--dim); font-size:15px; }
+  ol.steps p + p { margin-top:7px; }
+  kbd { font:inherit; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+        font-size:.92em; background:#0b0a09; border:1px solid var(--line);
+        border-radius:5px; padding:1px 6px; color:var(--ink); }
 
-  form { display: flex; gap: 8px; }
-  input, button, .copy {
-    font: inherit; border-radius: 10px; border: 1px solid var(--line);
-    padding: 13px 15px;
-  }
-  input {
-    flex: 1; min-width: 0; background: #0b0a09; color: var(--ink);
-  }
-  input:focus { outline: 2px solid var(--hot); outline-offset: -1px; }
-  button, .copy {
-    background: var(--hot); color: #16100e; border-color: var(--hot);
-    font-weight: 600; cursor: pointer; white-space: nowrap;
-  }
-  button:disabled { opacity: .5; cursor: default; }
-  .copy { width: 100%; text-align: center; display: block; }
+  .thread { background:var(--card); border:1px solid var(--line); border-radius:14px;
+            padding:8px; margin:0; }
+  /* fit-content so a three-letter reply is a three-letter bubble, the way a
+     real thread looks; max-width keeps a long entry from spanning edge to edge. */
+  .msg { padding:12px 15px; border-radius:10px; margin:6px; font-size:15px;
+         line-height:1.45; max-width:88%; width:fit-content; white-space:pre-wrap; }
+  .msg.them { background:#221f1c; }
+  .msg.you  { background:var(--hot); color:#16100e; margin-left:auto; }
+  .msg.room { background:#12221a; border:1px solid #24422f; max-width:100%; }
+  .who { display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+         opacity:.55; margin-bottom:5px; font-weight:600; }
+  .gap { text-align:center; color:var(--faint); font-size:12.5px; letter-spacing:.1em;
+         text-transform:uppercase; padding:14px 0 10px; }
 
-  .said { font-size: 14px; margin: 12px 0 0; min-height: 1.4em; }
-  .said.ok  { color: #7fc98a; }
-  .said.bad { color: #e88a72; }
+  dl { margin:0; }
+  dt { font-weight:600; margin-top:22px; font-size:16px; }
+  dd { margin:5px 0 0; color:var(--dim); font-size:15px; }
 
-  pre.share {
-    background: #0b0a09; border: 1px solid var(--line); border-radius: 10px;
-    padding: 14px; margin: 0 0 12px; font-size: 13.5px; line-height: 1.55;
-    white-space: pre-wrap; word-break: break-word;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink);
-  }
+  footer { max-width:44rem; margin:56px auto 0; color:var(--faint); font-size:12.5px;
+           line-height:1.75; border-top:1px solid var(--line); padding-top:20px; }
+  footer a { color:var(--dim); }
 
-  footer {
-    margin: 40px auto 0; max-width: 940px; color: #6b6660;
-    font-size: 12.5px; line-height: 1.7;
-  }
-  footer a { color: #6b6660; }
+  @media (min-width:700px) { .lede { font-size:38px; max-width:24ch; } }
 </style>
 </head>
 <body>
@@ -103,95 +86,89 @@
   <h1>Call Her</h1>
 
   <p class="lede">You said you'd call her.<b>Did you?</b></p>
-  <p class="sub">Text us how it went. It goes to the two friends you'd have
-  told anyway — and a week later we ask, in front of them, if you called.</p>
+  <p class="sub">Text it how the date went. It lands in a group chat with the two
+  friends you'd have told anyway — and a week later it asks, in front of them, if
+  you called.</p>
 
-  <div class="split">
-    <section class="card">
-      <h2>I'm the one going on the dates</h2>
-      <p>No app. No login. Everything happens in Messages.</p>
-      <ol>
-        <li>Put your number in. <b>We text you</b>, not the other way round.</li>
-        <li>You get one line to <b>paste into the group chat you already have</b>.</li>
-        <li>After a first date, text us. Choose <b>NOW</b> to hear from them,
-            or <b>WAIT</b> to decide for yourself first.</li>
-      </ol>
-      <form id="go">
-        <input id="phone" type="tel" inputmode="tel" autocomplete="tel"
-               placeholder="(612) 555-0123" aria-label="Your mobile number" required>
-        <button type="submit">Text me</button>
-      </form>
-      <p class="said" id="said" role="status"></p>
-    </section>
+  <a class="cta" href="https://t.me/callher_bot">Start on Telegram &rarr;</a>
+  <p class="under">Free. No app to install, no account, nothing to log into.
+  It runs inside a chat.</p>
 
-    <section class="card">
-      <h2>I want a friend to do this</h2>
-      <p>Send them this. You'll be in their circle when they start.</p>
-      <pre class="share" id="share">Loading…</pre>
-      <button class="copy" id="cp" type="button">Copy it</button>
-    </section>
+  <h2>How to start</h2>
+  <ol class="steps">
+    <li>
+      <h3>Message the bot</h3>
+      <p>Open <a href="https://t.me/callher_bot" style="color:var(--hot)">@callher_bot</a>
+      and send <kbd>/start</kbd>. It asks what your friends should see you as.</p>
+    </li>
+    <li>
+      <h3>Add it to the group chat you already have</h3>
+      <p>Don't make a new one. Open the group with the friends you'd text about
+      this anyway, add <kbd>@callher_bot</kbd> as a member, and send
+      <kbd>/claim</kbd> in it.</p>
+      <p>That group is your circle. Nobody gets added by anyone but themselves,
+      and nobody outside it ever sees a word.</p>
+    </li>
+    <li>
+      <h3>After a first date, text it</h3>
+      <p>A few sentences, however you'd write them. It asks one question back:
+      <kbd>NOW</kbd> or <kbd>WAIT</kbd>.</p>
+    </li>
+    <li>
+      <h3>Then it holds you to it</h3>
+      <p><kbd>NOW</kbd> puts the entry in the group straight away, and seven days
+      later asks the group whether you called.</p>
+      <p><kbd>WAIT</kbd> holds it for a week so nobody can talk you out of a
+      decision you haven't made yet — then posts the entry and what you actually
+      did, together.</p>
+    </li>
+  </ol>
+
+  <h2>What it looks like</h2>
+  <div class="thread">
+    <div class="msg you"><span class="who">You</span>Coffee at Spyhouse with the architect. Talked three hours, she laughed at the bad joke about my dog.</div>
+    <div class="msg them"><span class="who">Call Her</span>Got it. Open it to your 2 now, or hold it a week so you decide first?
+
+Reply NOW or WAIT.</div>
+    <div class="msg you"><span class="who">You</span>now</div>
+    <div class="msg room"><span class="who">Your group</span>Aidan, after a first date:
+
+"Coffee at Spyhouse with the architect. Talked three hours, she laughed at the bad joke about my dog."</div>
+    <div class="gap">seven days later</div>
+    <div class="msg room"><span class="who">Your group</span>A week ago Aidan wrote: "Coffee at Spyhouse with the architect. Talked three…"
+
+Aidan — did you call her?</div>
   </div>
+
+  <h2>The rules it keeps</h2>
+  <dl>
+    <dt>Her name never leaves your phone.</dt>
+    <dd>Every entry is read before it goes anywhere, and any name in it is
+    swapped for a handle — "the architect", "the girl from the run club". She
+    didn't sign up for this.</dd>
+
+    <dt>Nothing is public, ever.</dt>
+    <dd>There is no feed, no profile, no upvotes and no browsing. Entries go to
+    one group chat that you assembled, and nowhere else.</dd>
+
+    <dt>Nobody joins without joining.</dt>
+    <dd>No contact list is read, no number is imported. Your circle is whoever is
+    already in the group chat you added the bot to.</dd>
+
+    <dt>You get one update, and it asks for it.</dt>
+    <dd>What happened. Whether you called. That's the whole point — the
+    journaling is just how you get there.</dd>
+
+    <dt>Leaving is one word.</dt>
+    <dd>Send <kbd>STOP</kbd> and you're out and forgotten. Or remove the bot from
+    the group, and it stops.</dd>
+  </dl>
 </main>
 
 <footer>
-  Free, and it stays free. Message and data rates may apply — reply STOP to any
-  message to leave and we delete your number. Names are removed from every entry
-  before it is sent, because the other person didn't sign up for this.
-  <a href="mailto:aidan@brickandmortar.dev">aidan@brickandmortar.dev</a>
+  Free, and it stays free — built for public benefit, not a business.
+  Source at <a href="https://github.com/2016judea/call-her">github.com/2016judea/call-her</a>.
+  By <a href="https://aidanjude.vercel.app">Aidan Jude</a>.
 </footer>
-
-<script type="module">
-const $ = (id) => document.getElementById(id);
-let NUMBER = '', PRETTY = '';
-
-try {
-  const cfg = await (await fetch('/api/config')).json();
-  NUMBER = cfg.number; PRETTY = cfg.pretty;
-} catch { /* the form still works; the share line just stays generic */ }
-
-$('share').textContent = PRETTY
-  ? `Text "hi" to ${PRETTY} — it journals how a first date went and sends it to a few friends. Put me in yours.`
-  : `Go to ${location.hostname || 'callher.app'} — it journals how a first date went and sends it to a few friends. Put me in yours.`;
-
-$('cp').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText($('share').textContent);
-    $('cp').textContent = 'Copied';
-    setTimeout(() => ($('cp').textContent = 'Copy it'), 1600);
-  } catch {
-    // Clipboard is blocked in some in-app browsers. Select it so a long-press works.
-    const r = document.createRange();
-    r.selectNodeContents($('share'));
-    getSelection().removeAllRanges(); getSelection().addRange(r);
-    $('cp').textContent = 'Long-press to copy';
-  }
-});
-
-$('go').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = $('go').querySelector('button');
-  const said = $('said');
-  btn.disabled = true; said.className = 'said'; said.textContent = 'Sending…';
-  try {
-    const r = await fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: $('phone').value }),
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error || 'That did not work.');
-    said.className = 'said ok';
-    said.textContent = j.returning
-      ? 'You were already set up — check your messages.'
-      : 'Sent. Check your messages and reply there.';
-    $('go').reset();
-  } catch (err) {
-    said.className = 'said bad';
-    said.textContent = err.message;
-  } finally {
-    btn.disabled = false;
-  }
-});
-</script>
 </body>
 </html>

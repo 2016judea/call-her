@@ -1,21 +1,26 @@
-// Telegram webhook. A shim over lib/telegram-flow.js.
+// Telegram webhook. A shim: authenticate, then run the whole update inside one
+// atomic store transaction.
 
+import { blobStore } from '../lib/blob-db.js';
 import { createEngine } from '../lib/engine.js';
 import { createTelegramFlow } from '../lib/telegram-flow.js';
 import { scrub } from '../lib/scrub.js';
-import * as db from '../lib/db.js';
-import * as channel from '../lib/telegram.js';
+import * as telegram from '../lib/telegram.js';
 
-const engine = createEngine({ db, channel, scrub });
-const flow = createTelegramFlow({ db, channel, engine });
+const store = blobStore();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
   if (req.headers['x-telegram-bot-api-secret-token'] !== process.env.TELEGRAM_SECRET) {
     return res.status(403).end();
   }
+
   try {
-    await flow.route(req.body ?? {});
+    await store.transaction(async (db, channel) => {
+      const engine = createEngine({ db, channel, scrub });
+      const flow = createTelegramFlow({ db, channel, engine });
+      return flow.route(req.body ?? {});
+    }, telegram);
   } catch (err) {
     console.error('telegram', err);
   }

@@ -10,7 +10,11 @@ const BUD  = '+16125550222';
 const base = (over = {}) => ({
   now: NOW, ourNumber: OUR, user: null, invite: null, inviteOwner: null,
   codeOwner: null, codeOwnerCircleCount: 0, activeCircle: [], openEntry: null,
-  scrub: null, random: () => 0.5, ...over,
+  scrub: null, random: () => 0.5,
+  // Supplied by the channel in production — see lib/engine.js.
+  canInviteByCode: true,
+  invite_how: 'Send them this:\n"Text  join k7m2  to (612) 555-0100"',
+  ...over,
 });
 const user = (over = {}) => ({
   id: 1, phone: ME, handle: 'Aidan', join_code: 'k7m2',

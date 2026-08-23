@@ -7,33 +7,16 @@
 
 import { readFileSync, writeFileSync, existsSync, renameSync } from 'node:fs';
 import { memoryDb } from './memory-db.js';
-
-const DATE_KEYS = new Set([
-  'created_at', 'invited_at', 'joined_at', 'stopped_at',
-  'post_at', 'posted_at', 'chase_at', 'chased_at', 'outcome_asked_at',
-]);
-
-const revive = (rows = []) => rows.map((r) => {
-  const out = { ...r };
-  for (const k of DATE_KEYS) if (typeof out[k] === 'string') out[k] = new Date(out[k]);
-  return out;
-});
+import { revive, serialise } from '../lib/snapshot.js';
 
 export function fileDb(path) {
-  let seed;
-  if (existsSync(path)) {
-    const raw = JSON.parse(readFileSync(path, 'utf8'));
-    seed = {
-      users: revive(raw.users), circles: revive(raw.circles),
-      entries: revive(raw.entries), log: raw.log ?? [],
-    };
-  }
+  const seed = existsSync(path) ? revive(readFileSync(path, 'utf8')) : undefined;
   const db = memoryDb(seed);
 
   const save = () => {
     // Write-then-rename so a crash mid-write cannot truncate the store.
     const tmp = `${path}.tmp`;
-    writeFileSync(tmp, JSON.stringify(db._tables, null, 2));
+    writeFileSync(tmp, serialise(db._tables));
     renameSync(tmp, path);
   };
 

@@ -96,9 +96,9 @@ with those friends, and sends `/claim` in it. That is closer to the original
 idea than SMS is, and consent is implicit — everyone in that room chose to be
 in it and can leave it themselves, so there is no invite handshake at all.
 
-Consider running the beta here **first**, regardless of how registration goes.
-It costs nothing, it can start today, and it tells you whether the loop is
-worth a phone number before you spend one.
+**This is what shipped.** @callher_bot is live at https://call-her.vercel.app,
+and no carrier was involved. Register SMS only if Telegram proves the loop is
+worth a phone number.
 
 ## The recurring compliance surface
 
@@ -114,7 +114,8 @@ worth a phone number before you spend one.
 | `lib/machine.js`, `lib/keywords.js`, `lib/phone.js` | 27 tests, green |
 | `lib/scrub.js` | **verified live** against claude-opus-5 — 6 tests, `npm run test:live` |
 | `lib/twilio.js` | **not verified** — needs a registered number; group MMS cannot be tested without one |
-| Telegram channel | 11 tests over the real flow, green — but never pointed at a live bot |
+| Telegram channel | **LIVE** — @callher_bot, webhook on call-her.vercel.app, 14 tests |
+| Vercel Blob store | verified against the real service, including that a stale write is rejected |
 | Landing page | rendered and read at 390x664 and 1440x900 |
 
 The guard was run against the real model on 2026-08-23 and had two defects that

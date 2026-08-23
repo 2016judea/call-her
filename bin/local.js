@@ -55,6 +55,25 @@ const me = await fetch(
 ).then((r) => r.json());
 if (!me.ok) { console.error('bad token:', me.description); process.exit(1); }
 
+// A webhook and getUpdates are mutually exclusive. If production is live,
+// polling here silently steals its updates — so refuse unless forced.
+const hook = await fetch(
+  `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`,
+).then((r) => r.json());
+if (hook.result?.url && !process.argv.includes('--take-over')) {
+  console.error(
+    `\n  A webhook is live at ${hook.result.url}\n\n` +
+    `  Polling here would take updates away from it — production would go\n` +
+    `  quiet with no error anywhere. Either work against production, or run\n` +
+    `  with --take-over (which deletes the webhook; re-set it afterwards with\n` +
+    `  npm run webhook).\n`);
+  process.exit(1);
+}
+if (hook.result?.url) {
+  await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/deleteWebhook`);
+  console.log(D('\n  webhook deleted — production is now deaf until you re-set it'));
+}
+
 console.log(`\n  ${OUT('Call Her')} — running as @${me.result.username}`);
 console.log(D(`  DM the bot to start. Ctrl-C to stop.\n`));
 

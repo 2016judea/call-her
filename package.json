@@ -14,11 +14,13 @@
     "dev": "vercel dev",
     "sim": "node sim/drive.js",
     "repl": "node sim/drive.js --repl",
-    "bot": "node bin/local.js"
+    "bot": "node bin/local.js",
+    "webhook": "node bin/webhook.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^2.8.0",
     "twilio": "^5.10.4",
     "zod": "^4.4.3"
   }
