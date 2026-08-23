@@ -159,6 +159,19 @@ commit that raced another fails and retries against fresh state rather than
 clobbering it. **Outbound messages are buffered until the commit lands** — without
 that, a retry would text everyone twice.
 
+**Reads are not reliably fresh, and that is handled rather than avoided.** A
+public blob is served from the CDN with `cache-control: public, max-age=60` and
+`cacheControlMaxAge` cannot go below it, so reading through the returned URL
+served content up to a minute old (observed `x-cache: HIT`, `age: 24`). `read()`
+therefore uses `get(..., { useCache: false })`, which reads origin **and** returns
+the ETag alongside the very bytes it read — a separate `head()` + `fetch()` could
+pair an ETag with different content. Even then, origin reads flake: a `get` on a
+document that definitely exists returned null once in six back-to-back reads.
+That cannot lose data, because a null read carries no ETag, so the commit uses
+`ifNoneMatch: '*'`, finds the document present, fails, and retries. The CAS is not
+only protecting against concurrent writers — **it is what makes an unreliable read
+safe.** `test/blob-store.test.js` pins all of it against a faked blob layer.
+
 `lib/db.js` still implements the identical contract against Postgres, so moving
 is one import.
 
