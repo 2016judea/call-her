@@ -113,5 +113,7 @@ group chat they already have. Both channels run the same engine; only the
 onboarding differs, because a bot cannot create a group or add anyone to one.
 
 Design notes: [`docs/superpowers/specs/2026-08-23-call-her-design.md`](docs/superpowers/specs/2026-08-23-call-her-design.md)
+What actually happened while building it, including what is still unproven:
+[`docs/journal/2026-08-23-build.md`](docs/journal/2026-08-23-build.md)
 
 MIT.
