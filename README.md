@@ -92,6 +92,21 @@ npm test        # 49 tests, no network, instant
 5. **Read [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) before registering
    anything.** The registration is less reversible than any code here.
 
+## Run the real bot with no infrastructure
+
+```
+npm run bot
+```
+
+Long-polls `getUpdates` instead of taking a webhook, so it needs no public URL,
+no deploy and no Postgres — state lives in `.local-store.json` and survives
+restarts. Everything else is production code: the real Bot API, the real content
+guard, the same `lib/engine.js` the webhook would call. Enough to put the loop
+on real phones before any infrastructure exists.
+
+While it is not running the bot simply does not answer; Telegram queues updates
+for about a day and they are picked up on restart.
+
 ## Running it
 
 ```bash

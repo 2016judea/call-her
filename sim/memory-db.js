@@ -3,12 +3,17 @@
 
 import { S } from '../lib/machine.js';
 
-export function memoryDb() {
-  const users = [];
-  const circles = [];
-  const entries = [];
-  const log = [];
-  let uid = 0, cid = 0, eid = 0;
+/**
+ * @param {object} [seed] a previous `_tables` snapshot to restore. Id counters
+ *   are derived from it, so restored rows can never collide with new ones.
+ */
+export function memoryDb(seed) {
+  const users   = seed?.users   ?? [];
+  const circles = seed?.circles ?? [];
+  const entries = seed?.entries ?? [];
+  const log     = seed?.log     ?? [];
+  const high = (rows) => rows.reduce((m, r) => Math.max(m, r.id ?? 0), 0);
+  let uid = high(users), cid = high(circles), eid = high(entries);
 
   const byPhone = (p) => users.find((u) => u.phone === p) ?? null;
 

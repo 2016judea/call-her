@@ -13,7 +13,8 @@
     "test:live": "node --test test/scrub.live.test.js",
     "dev": "vercel dev",
     "sim": "node sim/drive.js",
-    "repl": "node sim/drive.js --repl"
+    "repl": "node sim/drive.js --repl",
+    "bot": "node bin/local.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
