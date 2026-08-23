@@ -54,8 +54,23 @@
   .msg.room { background:#12221a; border:1px solid #24422f; max-width:100%; }
   .who { display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
          opacity:.55; margin-bottom:5px; font-weight:600; }
-  .gap { text-align:center; color:var(--faint); font-size:12.5px; letter-spacing:.1em;
-         text-transform:uppercase; padding:14px 0 10px; }
+  /* Time passing / narration: a hairline-flanked label, the classic thread
+     divider. Grid rather than flex so the rules split the leftover space evenly
+     however long the label is. */
+  .gap { display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+         gap:12px; color:var(--faint); font-size:12.5px; letter-spacing:.1em;
+         text-transform:uppercase; padding:16px 10px 12px; }
+  .gap::before, .gap::after { content:""; height:1px; background:var(--line); }
+
+  /* An event that happens INSIDE a chat — Telegram draws these as a centred
+     pill, so draw it as one. Green because it belongs to the group, matching
+     .msg.room. width:fit-content keeps it a pill and not a lozenge. */
+  .event { display:flex; align-items:center; gap:9px; width:fit-content;
+           max-width:calc(100% - 24px); margin:18px auto 12px; padding:9px 15px;
+           border-radius:999px; background:#12221a; border:1px solid #24422f;
+           color:var(--dim); font-size:13.5px; line-height:1.35; }
+  .event b { color:var(--ink); font-weight:600; }
+  .event svg { flex:none; width:15px; height:15px; stroke:#61a078; }
 
   dl { margin:0; }
   dt { font-weight:600; margin-top:22px; font-size:16px; }
@@ -96,7 +111,15 @@ open that chat  -&gt;  add member  -&gt;  @CallHerBot
 
 then send  /claim  in it.</div>
 
-    <div class="gap">so you open the group you already have, and add it</div>
+    <div class="event">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1"/>
+        <circle cx="8.5" cy="7" r="4"/>
+        <path d="M19 8v6M22 11h-6"/>
+      </svg>
+      <span>Aidan added <b>@CallHerBot</b></span>
+    </div>
 
     <div class="msg you"><span class="who">You &middot; in the group</span>/claim</div>
     <div class="msg room"><span class="who">Your group</span>Bound. This is where I'll post Aidan's entries.
