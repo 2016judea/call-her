@@ -92,7 +92,7 @@ async function scripted() {
   h.dump();
 
   scene('5. Second date, and this time he holds it');
-  await h.text(ME, 'Drinks at Marvel Bar with the girl from the run club. Good chemistry. Not sure yet.');
+  await h.text(ME, 'Drinks at Marvel Bar with the girl from the bookstore. Good chemistry. Not sure yet.');
   await h.text(ME, 'wait');
 
   scene('6. Nothing reaches the circle for a week');

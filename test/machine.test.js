@@ -67,10 +67,10 @@ test('explicit content is refused and never stored', () => {
 test('a scrubbed name is reported to the author, and the clean body is stored', () => {
   const r = machine(base({
     user: user(), activeCircle: [{ phone: BUD }],
-    scrub: { clean: 'Coffee with the architect', removedNames: ['Sarah'], explicit: false },
+    scrub: { clean: 'Coffee with the one who ordered the whole fish', removedNames: ['Sarah'], explicit: false },
   }), sms('Coffee with Sarah Miller, talked for three hours'));
   const entry = r.effects.find((e) => e.type === 'create_entry');
-  assert.equal(entry.clean, 'Coffee with the architect');
+  assert.equal(entry.clean, 'Coffee with the one who ordered the whole fish');
   assert.equal(entry.raw, 'Coffee with Sarah Miller, talked for three hours');
   assert.match(said(r), /took a name out/);
 });

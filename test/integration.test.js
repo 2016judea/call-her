@@ -83,7 +83,7 @@ test('a re-joined circle makes them ready again', async () => {
 
 test('a held entry reaches nobody before its week is up', async () => {
   const r = await onboarded(rig());
-  await r.text(ME, 'Drinks at Marvel Bar with the girl from the run club, good chemistry');
+  await r.text(ME, 'Drinks at Marvel Bar with the girl from the bookstore, good chemistry');
   await r.text(ME, 'wait');
 
   const before = r.inRoom().length;
@@ -114,12 +114,12 @@ test('the daily pass is idempotent — a second run posts and chases nothing', a
 
 test('the day-7 question quotes the entry so the group knows which date', async () => {
   const r = await onboarded(rig());
-  await r.text(ME, 'Coffee at Spyhouse with the architect, talked three hours');
+  await r.text(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
   await r.text(ME, 'now');
   await r.jump(7);
   const chase = r.inRoom().at(-1);
   assert.match(chase, /did you call her/);
-  assert.match(chase, /Spyhouse/, 'the question did not say which date it meant');
+  assert.match(chase, /Owamni/, "the question did not say which date it meant");
 });
 
 test('dates in copy are never a bare weekday', async () => {

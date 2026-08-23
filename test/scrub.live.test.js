@@ -7,7 +7,7 @@
 // Every case here is a defect this guard actually had. It invented "the girl
 // from the app" about someone met in person — a fabricated fact his friends
 // would have read as true. Then it over-corrected and deleted a real detail
-// ("Rachel from the run club" -> "her"). Both are pinned below.
+// ("Rachel from the bookstore" -> "her"). Both are pinned below.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -42,20 +42,20 @@ test('place names survive — they are what makes an entry worth reading', opts,
 
 test('the name is replaced, not the phrase around it', opts, async () => {
   const r = await scrub(
-    'Second time seeing Rachel from the run club. Coffee after the Tuesday ' +
+    'Second time seeing Rachel from the bookstore. Coffee after the Tuesday ' +
     'loop. She ordered the whole fish.');
   assert.doesNotMatch(r.clean, /Rachel/);
-  // The over-correction this pins: "from the run club" is a real detail and
+  // The over-correction this pins: "from the bookstore" is a real detail and
   // deleting it loses information the guard was never asked to touch.
-  assert.match(r.clean, /run club/, `deleted a real detail: ${r.clean}`);
+  assert.match(r.clean, /bookstore/, `deleted a real detail: ${r.clean}`);
   assert.match(r.clean, /whole fish/);
 });
 
 test('a stated fact becomes the handle', opts, async () => {
   const r = await scrub(
-    'Dinner with Emma. She is an architect, works on those towers by the river.');
+    'Dinner with Emma. She is a pastry chef, does the bread at that place on Hennepin.');
   assert.doesNotMatch(r.clean, /Emma/);
-  assert.match(r.clean, /architect/);
+  assert.match(r.clean, /pastry chef|chef|baker/);
 });
 
 test('their voice, typos and punctuation are left alone', opts, async () => {

@@ -80,7 +80,7 @@ test('a join code is refused here rather than crashing on createRoom', async () 
 test('the drained-circle message also says how to fix it, per channel', async () => {
   const r = await setUp(rig());
   await r.evicted();
-  await r.dm(ME, 'Coffee at Spyhouse with the architect, talked three hours');
+  await r.dm(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
   const said = r.toldTo(ME).at(-1);
   assert.match(said, /nobody in your circle yet/);
   assert.match(said, /\/claim/, 'told them the problem but not the remedy');
@@ -136,17 +136,17 @@ test('re-claiming your own group does not re-announce', async () => {
 
 test('the full loop runs on this channel, NOW mode', async () => {
   const r = await setUp(rig());
-  await r.dm(ME, 'Coffee at Spyhouse with the architect, talked three hours');
+  await r.dm(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
   assert.match(r.toldTo(ME).at(-1), /NOW or WAIT/);
   await r.dm(ME, 'now');
-  assert.match(r.inGroup().at(-1), /Spyhouse/);
+  assert.match(r.inGroup().at(-1), /Owamni/);
   await r.jump(7);
   assert.match(r.inGroup().at(-1), /did you call her/);
 });
 
 test('the full loop runs on this channel, WAIT mode', async () => {
   const r = await setUp(rig());
-  await r.dm(ME, 'Drinks at Marvel Bar with the girl from the run club, good chemistry');
+  await r.dm(ME, 'Drinks at Marvel Bar with the girl from the bookstore, good chemistry');
   await r.dm(ME, 'wait');
   const held = r.inGroup().length;
   await r.jump(6);
@@ -171,7 +171,7 @@ test('being removed from the group forgets it and sends them back to setup', asy
   assert.equal(r.user().state, S.BUILDING_CIRCLE);
 
   // And with no room, an entry must be refused rather than crash on createRoom.
-  await r.dm(ME, 'Coffee at Spyhouse with the architect, talked three hours');
+  await r.dm(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
   assert.equal(r.db._tables.entries.length, 0);
   assert.match(r.toldTo(ME).at(-1), /nobody in your circle yet/);
 });

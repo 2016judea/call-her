@@ -17,7 +17,7 @@ into the group chat you already have.
 ## The loop
 
 ```
-You  ->  Coffee at Spyhouse with the architect. Talked three hours.
+You  ->  Dinner at Owamni with the one who ordered the whole fish.
 
 Us   ->  Got it. Open it to your 4 now, or hold it a week so you
          decide first?  Reply NOW or WAIT.
