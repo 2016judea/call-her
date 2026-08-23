@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Call Her</title>
+<meta name="description" content="You text us after a date. It goes to a few friends. A week later we ask if you followed through.">
+<style>
+  :root {
+    --ink: #f4f1ec;
+    --dim: #9a948c;
+    --bg: #0e0d0c;
+    --card: #171513;
+    --line: #2b2825;
+    --hot: #e8623c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 ui-sans-serif, -apple-system, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 28px 20px 56px;
+  }
+  main { max-width: 940px; margin: 0 auto; }
+
+  h1 {
+    font-size: 15px; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 26px;
+  }
+  .lede {
+    font-size: 27px; line-height: 1.24; font-weight: 500;
+    letter-spacing: -.02em; margin: 0 0 12px; max-width: 20ch;
+  }
+  .lede b { color: var(--hot); font-weight: 500; display: block; }
+  .sub { color: var(--dim); margin: 0 0 34px; max-width: 34ch; }
+
+  .split { display: grid; gap: 14px; }
+  @media (min-width: 760px) {
+    body { padding-top: 56px; }
+    .lede { font-size: 40px; max-width: 24ch; }
+    .split { grid-template-columns: 1fr 1fr; gap: 18px; }
+  }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px;
+  }
+  .card h2 {
+    font-size: 17px; margin: 0 0 6px; font-weight: 600; letter-spacing: -.01em;
+  }
+  .card p { color: var(--dim); font-size: 14.5px; margin: 0 0 18px; }
+
+  ol { margin: 0 0 20px; padding-left: 0; list-style: none; counter-reset: s; }
+  ol li {
+    counter-increment: s; position: relative; padding-left: 30px;
+    margin-bottom: 9px; font-size: 14.5px; color: var(--dim);
+  }
+  ol li::before {
+    content: counter(s); position: absolute; left: 0; top: 1px;
+    width: 19px; height: 19px; border-radius: 50%;
+    background: #262220; color: var(--ink);
+    font-size: 11px; font-weight: 600;
+    display: grid; place-items: center;
+  }
+  ol li b { color: var(--ink); font-weight: 500; }
+
+  form { display: flex; gap: 8px; }
+  input, button, .copy {
+    font: inherit; border-radius: 10px; border: 1px solid var(--line);
+    padding: 13px 15px;
+  }
+  input {
+    flex: 1; min-width: 0; background: #0b0a09; color: var(--ink);
+  }
+  input:focus { outline: 2px solid var(--hot); outline-offset: -1px; }
+  button, .copy {
+    background: var(--hot); color: #16100e; border-color: var(--hot);
+    font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  .copy { width: 100%; text-align: center; display: block; }
+
+  .said { font-size: 14px; margin: 12px 0 0; min-height: 1.4em; }
+  .said.ok  { color: #7fc98a; }
+  .said.bad { color: #e88a72; }
+
+  pre.share {
+    background: #0b0a09; border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; margin: 0 0 12px; font-size: 13.5px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink);
+  }
+
+  footer {
+    margin: 40px auto 0; max-width: 940px; color: #6b6660;
+    font-size: 12.5px; line-height: 1.7;
+  }
+  footer a { color: #6b6660; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Call Her</h1>
+
+  <p class="lede">You said you'd call her.<b>Did you?</b></p>
+  <p class="sub">Text us how it went. It goes to the two friends you'd have
+  told anyway — and a week later we ask, in front of them, if you called.</p>
+
+  <div class="split">
+    <section class="card">
+      <h2>I'm the one going on the dates</h2>
+      <p>No app. No login. Everything happens in Messages.</p>
+      <ol>
+        <li>Put your number in. <b>We text you</b>, not the other way round.</li>
+        <li>You get one line to <b>paste into the group chat you already have</b>.</li>
+        <li>After a first date, text us. Choose <b>NOW</b> to hear from them,
+            or <b>WAIT</b> to decide for yourself first.</li>
+      </ol>
+      <form id="go">
+        <input id="phone" type="tel" inputmode="tel" autocomplete="tel"
+               placeholder="(612) 555-0123" aria-label="Your mobile number" required>
+        <button type="submit">Text me</button>
+      </form>
+      <p class="said" id="said" role="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>I want a friend to do this</h2>
+      <p>Send them this. You'll be in their circle when they start.</p>
+      <pre class="share" id="share">Loading…</pre>
+      <button class="copy" id="cp" type="button">Copy it</button>
+    </section>
+  </div>
+</main>
+
+<footer>
+  Free, and it stays free. Message and data rates may apply — reply STOP to any
+  message to leave and we delete your number. Names are removed from every entry
+  before it is sent, because the other person didn't sign up for this.
+  <a href="mailto:aidan@brickandmortar.dev">aidan@brickandmortar.dev</a>
+</footer>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+let NUMBER = '', PRETTY = '';
+
+try {
+  const cfg = await (await fetch('/api/config')).json();
+  NUMBER = cfg.number; PRETTY = cfg.pretty;
+} catch { /* the form still works; the share line just stays generic */ }
+
+$('share').textContent = PRETTY
+  ? `Text "hi" to ${PRETTY} — it journals how a first date went and sends it to a few friends. Put me in yours.`
+  : `Go to ${location.hostname || 'callher.app'} — it journals how a first date went and sends it to a few friends. Put me in yours.`;
+
+$('cp').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText($('share').textContent);
+    $('cp').textContent = 'Copied';
+    setTimeout(() => ($('cp').textContent = 'Copy it'), 1600);
+  } catch {
+    // Clipboard is blocked in some in-app browsers. Select it so a long-press works.
+    const r = document.createRange();
+    r.selectNodeContents($('share'));
+    getSelection().removeAllRanges(); getSelection().addRange(r);
+    $('cp').textContent = 'Long-press to copy';
+  }
+});
+
+$('go').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('go').querySelector('button');
+  const said = $('said');
+  btn.disabled = true; said.className = 'said'; said.textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: $('phone').value }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'That did not work.');
+    said.className = 'said ok';
+    said.textContent = j.returning
+      ? 'You were already set up — check your messages.'
+      : 'Sent. Check your messages and reply there.';
+    $('go').reset();
+  } catch (err) {
+    said.className = 'said bad';
+    said.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

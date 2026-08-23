@@ -1,0 +1,21 @@
+{
+  "name": "call-her",
+  "version": "0.1.0",
+  "private": false,
+  "description": "You text us after a first date. We post it to your circle. No app.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "@neondatabase/serverless": "^1.0.2",
+    "twilio": "^5.10.4",
+    "zod": "^4.4.3"
+  }
+}
