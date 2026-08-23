@@ -67,28 +67,36 @@ export function memoryDb(seed) {
       if (c) c.status = 'removed';
     },
 
-    createEntry: async (userId, raw, clean) => {
+    // NOTE: created_at / posted_at / chased_at are stamped from the real wall
+    // clock, not from the engine's injected `now`. Under a jumped clock they
+    // are therefore wrong, so the machine must never make a decision or print
+    // a date from one of them — use the columns the machine itself wrote
+    // (post_at, chase_at). Reading created_at here cost a defect on 2026-08-23.
+    createEntry: async (userId, raw, clean, postAt, chaseAt) => {
       const e = { id: ++eid, author_id: userId, raw_body: raw, body: clean,
                   mode: null, outcome: null, created_at: new Date(),
-                  post_at: null, posted_at: null, chase_at: null,
+                  post_at: postAt ?? null, posted_at: null,
+                  chase_at: chaseAt ?? null,
                   chased_at: null, outcome_asked_at: null };
       entries.push(e);
       return e;
     },
     openEntry: async (userId) =>
       [...entries].reverse().find((e) => e.author_id === userId &&
-        (e.mode === null || (e.mode === 'wait' && e.posted_at === null))) ?? null,
-    setEntryMode: async (id, mode, postAt, chaseAt) => {
-      const e = entries.find((x) => x.id === id);
-      Object.assign(e, { mode, post_at: postAt, chase_at: chaseAt });
+        (e.mode === null ||
+         (e.outcome_asked_at !== null && e.outcome === null))) ?? null,
+    setEntryMode: async (id, mode) => {
+      entries.find((x) => x.id === id).mode = mode;
     },
     setOutcome:       async (id, outcome) => { entries.find((e) => e.id === id).outcome = outcome; },
     markPosted:       async (id) => { entries.find((e) => e.id === id).posted_at = new Date(); },
     markChased:       async (id) => { entries.find((e) => e.id === id).chased_at = new Date(); },
     markOutcomeAsked: async (id) => { entries.find((e) => e.id === id).outcome_asked_at = new Date(); },
 
+    // Only ever an entry whose NOW-or-WAIT question was never answered:
+    // choosing a mode posts it on the spot.
     duePosts: async (now) => entries.filter((e) =>
-      !e.posted_at && e.post_at && e.post_at <= now && e.mode === 'wait'),
+      !e.posted_at && e.mode === null && e.post_at && e.post_at <= now),
     dueChases: async (now) => entries.filter((e) =>
       !e.chased_at && e.chase_at && e.chase_at <= now && e.posted_at),
 

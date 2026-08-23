@@ -81,30 +81,54 @@ test('a re-joined circle makes them ready again', async () => {
   assert.equal(r.me().state, S.READY);
 });
 
-test('a held entry reaches nobody before its week is up', async () => {
+test('WAIT reaches the room at once, and his one update lands two weeks on', async () => {
   const r = await onboarded(rig());
   await r.text(ME, 'Drinks at Marvel Bar with the girl from the bookstore, good chemistry');
+  const before = r.inRoom().length;
   await r.text(ME, 'wait');
 
-  const before = r.inRoom().length;
-  await r.jump(6);
-  assert.equal(r.inRoom().length, before, 'a held entry leaked early');
+  // The correction that produced this test: WAIT used to hold the entry back
+  // for a week, leaving the group chat — the product — empty. The room is
+  // asked to let him decide; it is never kept in the dark.
+  assert.equal(r.inRoom().length, before + 1, 'WAIT must still reach the room');
+  assert.match(r.inRoom().at(-1), /Marvel Bar/);
+  assert.match(r.inRoom().at(-1), /isn't reading this till/);
 
+  await r.jump(13);
+  // Not /what happened/ — the WAIT confirmation says "for what happened" too.
+  assert.doesNotMatch(r.toldTo(ME).at(-1), /Your turn/, 'asked before two weeks');
   await r.jump(1);
-  assert.match(r.toldTo(ME).at(-1), /what happened/);
-  assert.equal(r.inRoom().length, before, 'it must still wait on the outcome');
+  assert.match(r.toldTo(ME).at(-1), /Two weeks. Your turn/);
 
+  const roomBefore = r.inRoom().length;
   await r.text(ME, 'Called her Thursday.');
-  const posted = r.inRoom().at(-1);
-  assert.match(posted, /Marvel Bar/);
-  assert.match(posted, /Called her Thursday/);
+  assert.equal(r.inRoom().length, roomBefore + 1, 'exactly one update posted');
+  assert.match(r.inRoom().at(-1), /Called her Thursday/);
+});
+
+test('an ignored NOW-or-WAIT still lands, and does not wedge the next entry', async () => {
+  const r = await onboarded(rig());
+  await r.text(ME, 'Coffee at Spyhouse, talked three hours, it went really well');
+  const before = r.inRoom().length;
+
+  await r.jump(2);                                    // he never answered
+  assert.equal(r.inRoom().length, before + 1, 'the journal reached nobody');
+  assert.match(r.inRoom().at(-1), /Spyhouse/);
+  assert.doesNotMatch(r.inRoom().at(-1), /isn't reading/, 'defaults to open');
+  assert.equal(r.me().state, S.READY);
+
+  // The wedge this guards: still in AWAITING_MODE, the next entry would come
+  // back as "NOW or WAIT." forever and never become an entry at all.
+  await r.text(ME, 'Dinner at Owamni with the one who ordered the whole fish');
+  assert.match(r.toldTo(ME).at(-1), /NOW or WAIT/);
+  assert.equal(r.db._tables.entries.length, 2);
 });
 
 test('the daily pass is idempotent — a second run posts and chases nothing', async () => {
   const r = await onboarded(rig());
   await r.text(ME, 'Coffee at Spyhouse, talked three hours, it went really well');
   await r.text(ME, 'now');
-  await r.jump(7);
+  await r.jump(14);
   const after = r.inRoom().length;
 
   const second = await r.jump(0);
@@ -112,14 +136,16 @@ test('the daily pass is idempotent — a second run posts and chases nothing', a
   assert.equal(r.inRoom().length, after, 'the second pass duplicated a post');
 });
 
-test('the day-7 question quotes the entry so the group knows which date', async () => {
+test('the two-week question never appears in the room', async () => {
+  // The room reads his journal and, later, his update. It is never handed a
+  // question about him — that is an interrogation, and it is not the product.
   const r = await onboarded(rig());
   await r.text(ME, 'Dinner at Owamni with the one who ordered the whole fish, talked three hours');
   await r.text(ME, 'now');
-  await r.jump(7);
-  const chase = r.inRoom().at(-1);
-  assert.match(chase, /did you call her/);
-  assert.match(chase, /Owamni/, "the question did not say which date it meant");
+  const roomAfterEntry = r.inRoom().length;
+  await r.jump(14);
+  assert.equal(r.inRoom().length, roomAfterEntry, 'something was said to the room');
+  assert.match(r.toldTo(ME).at(-1), /what happened/);
 });
 
 test('dates in copy are never a bare weekday', async () => {
@@ -127,7 +153,7 @@ test('dates in copy are never a bare weekday', async () => {
   const r = await onboarded(rig());
   await r.text(ME, 'Coffee at Spyhouse, talked three hours, it went really well');
   await r.text(ME, 'wait');
-  const said = r.toldTo(ME).at(-1);
+  const said = [r.toldTo(ME).at(-1), r.inRoom().at(-1)].join('\n');
   assert.match(said, /[A-Z][a-z]{2},? [A-Z][a-z]{2} \d+/, `no date in: ${said}`);
   assert.doesNotMatch(said, /\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/,
     `a bare weekday name is ambiguous seven days out: ${said}`);

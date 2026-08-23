@@ -86,19 +86,22 @@ async function scripted() {
   await h.text(ME, 'Coffee with Sarah at Spyhouse. Talked three hours, she laughed at the bad joke about the dog. Calling her Thursday.');
   await h.text(ME, 'now');
 
-  scene('4. A friend replies in the group; a week passes');
+  scene('4. The friends talk about it — immediately, which is the point');
   h.channel.echoIn(MIKE, '[in the group] three hours?? call her');
-  await h.jump(7);
+  h.channel.echoIn(SAM, '[in the group] the dog joke landing is a green flag');
+
+  scene('5. Two weeks on, he is asked for his one update');
+  await h.jump(13);
+  console.log(D('  (nothing yet — correct: the lock is two weeks, not one)\n'));
+  await h.jump(1);
+  await h.text(ME, 'Called her Thursday. Dinner Saturday. She picked the place.');
   h.dump();
 
-  scene('5. Second date, and this time he holds it');
+  scene('6. Second date, and this time he asks the room to sit on it');
   await h.text(ME, 'Drinks at Marvel Bar with the girl from the bookstore. Good chemistry. Not sure yet.');
   await h.text(ME, 'wait');
-
-  scene('6. Nothing reaches the circle for a week');
-  await h.jump(3);
-  console.log(D('  (nothing — correct: the entry is still his alone)\n'));
-  await h.jump(4);
+  console.log(D('  (the entry is in the room NOW — with the hold said out loud)\n'));
+  await h.jump(14);
   await h.text(ME, 'Called her. We are getting dinner Saturday.');
   h.dump();
 

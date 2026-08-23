@@ -4,11 +4,15 @@
 verbatim. This file is the engineering side: what got built from it, why, and
 the rules that have teeth. Claude Code loads it automatically in this repo.
 
-You text it after a first date. It puts your entry in a group text with the few
-friends you'd have told anyway. A week later it asks you, in front of them,
-whether you called her.
+You already text two friends after a first date. This makes it a group chat, and
+two weeks later asks you what you did.
 
 Free, and it stays free.
+
+**Read `README.md` before changing behaviour, not just before changing copy.**
+It is the brief, it outranks this file, and on 2026-08-23 the first build got
+its central mechanic backwards — see "The premise, and the way it was got
+wrong" below.
 
 **There is no app and no product UI.** The whole thing lives in Messages. The
 website exists to explain it, take your number, and hand you one line to paste
@@ -19,25 +23,53 @@ into the group chat you already have.
 ```
 You  ->  Dinner at Owamni with the one who ordered the whole fish.
 
-Us   ->  Got it. Open it to your 4 now, or hold it a week so you
-         decide first?  Reply NOW or WAIT.
+Us   ->  Going to your 4. Their replies as they come, or should I
+         ask them to let you decide first?  Reply NOW or WAIT.
 
 You  ->  wait
 
-Us   ->  Held. Your circle sees it Sunday — until then the call is
-         yours alone.
+[in the group, immediately]
+Us   ->  Aidan, after a first date:
+         "Dinner at Owamni with the one who ordered the whole fish."
 
-         ... 7 days ...
+         Aidan isn't reading this till Sun Sep 6 — talk among
+         yourselves.
 
-Us   ->  Your entry goes to the circle today. Before it does:
-         what happened?
+         ... 14 days ...
+
+Us   ->  Two weeks. Your turn — what happened? One line is plenty.
 ```
 
-`NOW` opens it immediately and, seven days later, asks the group whether you
-called. `WAIT` holds the entry for a week so nobody can talk you out of a
-decision you haven't made yet, then posts the entry and the outcome together.
+**The entry always goes to the room.** `NOW` and `WAIT` choose what the room is
+*told*, never whether it is told: `WAIT` posts the same entry with the hold
+stated where the whole room can see it. Two weeks later — his brief's number —
+the bot asks **him**, privately, for his one update, and posts his words.
 
-The journaling is the hook. **The day-7 question is the mechanism.**
+## The premise, and the way it was got wrong
+
+The first build (same day, commits `7c985c9`..`5afda0c`) inverted the mechanic,
+and Aidan caught it. Worth keeping, because every wrong line came from the same
+single misreading:
+
+| The brief says | The first build did |
+|---|---|
+| "you will see your buddies **replies** … 1 week later" — the delay is on **him** | `WAIT` hid the **entry from them** for a week. The group chat sat empty. |
+| "locked out for **2 weeks** before they can give the 'what happened'" | 7 days. |
+| "the creator **is allowed to give** one update" | the bot asked the room *"— did you call her?"* |
+| "**Journaling is good.** … primarily geared at improving things" | *"The journaling is the hook. The day-7 question is the mechanism."* |
+| "I wanna fuel **creative discourse** … small group discussions" | in `WAIT` mode there was nothing to discuss for a week. |
+
+**The rule that falls out: the group chat is the product.** An entry that does
+not reach the room is the one outcome this cannot produce, and
+`test/machine.test.js` + `test/integration.test.js` both pin it in either mode.
+
+**And the honest limit, stated in the copy rather than papered over:** he is a
+member of that room, so no code can withhold his friends' replies from him. The
+hold is a norm the room can see and honour. What actually stops him being talked
+out of it is the two-week lock on his update — he has to act before he reports.
+Chosen by Aidan 2026-08-23 over the two enforceable alternatives (friends DM the
+bot for a week; or a room he is not in), because both cost the one group chat
+that made this worth building.
 
 ## Layout
 
@@ -72,19 +104,21 @@ npm run sim      # scripted: both modes, a week jumped, the guards
 npm run repl     # type as any number;  /as <number>  /jump <days>  /state
 ```
 
-The simulator runs `lib/engine.js` — the exact path production takes. Four
-defects came out of the first drive that no unit test would have found; see
-`git log`.
+The simulator runs `lib/engine.js` — the exact path production takes. Five
+defects have come out of drives that no unit test would have found — including a
+hold date printed two weeks in the past, because the machine was reading the
+entry's `created_at` and the store stamps that from the real clock rather than
+the injected one. See `git log`.
 
 `lib/machine.js` is pure — no network, no database, no clock beyond an injected
 `now`. Every consequence comes back as a declarative effect. This is deliberate:
 everything that can go wrong in this product is a sequencing bug (a question
-that fires twice, an entry posted to a circle of zero, a held entry that never
-lands), and none of those are testable against a live phone network and a
-seven-day timer.
+that fires twice, an entry posted to a circle of zero, an entry whose mode was
+never answered and so never landed), and none of those are testable against a
+live phone network and a two-week timer.
 
 ```
-npm test        # 49 tests, no network, instant
+npm test        # 61 tests, no network, instant
 ```
 
 ## Rules with teeth
@@ -124,7 +158,7 @@ for about a day and they are picked up on restart.
 
 ```bash
 npx vercel env pull .env.vercel   # BLOB_READ_WRITE_TOKEN
-npm test                          # 52, free, instant
+npm test                          # 61, free, instant
 npm run test:live                 # 6, needs ANTHROPIC_API_KEY, costs money
 npm run bot                       # the real bot, off this laptop
 npm run webhook                   # point it back at production

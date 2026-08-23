@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { machine, S, HOLD_DAYS } from '../lib/machine.js';
+import { machine, S, QUIET_DAYS, OUTCOME_DAYS, MODE_GRACE_DAYS } from '../lib/machine.js';
 
 const NOW = new Date('2026-08-23T18:00:00Z');
 const OUR = '+16125550100';
@@ -75,27 +75,65 @@ test('a scrubbed name is reported to the author, and the clean body is stored', 
   assert.match(said(r), /took a name out/);
 });
 
-test('NOW posts immediately and schedules the chase 7 days out', () => {
+// The premise, pinned. The group chat is the product: an entry that does not
+// reach the room is the one thing this cannot do, in EITHER mode. A previous
+// build had WAIT hold the entry back for a week, which is the opposite of the
+// brief ("you will see your buddies replies... 1 week later" — the delay is on
+// HIM, not on them). These two tests exist to stop that coming back.
+test('an entry carries both clocks from the moment it is written', () => {
   const r = machine(base({
-    user: user({ state: S.AWAITING_MODE }), activeCircle: [{ phone: BUD }],
-    openEntry: { id: 9, body: 'Coffee at Spyhouse' },
-  }), sms('now'));
-  const mode = r.effects.find((e) => e.type === 'set_entry_mode');
-  assert.equal(mode.mode, 'now');
-  assert.equal(mode.chaseAt.getTime() - NOW.getTime(), HOLD_DAYS * 86400000);
-  assert.ok(kinds(r).includes('post_entry'));
+    user: user(), activeCircle: [{ phone: BUD }],
+  }), sms('Dinner at Owamni with the one who ordered the whole fish'));
+  const e = r.effects.find((x) => x.type === 'create_entry');
+  assert.equal(e.chaseAt.getTime() - NOW.getTime(), OUTCOME_DAYS * 86400000,
+    'his one update is asked for two weeks after the date, not the reply');
+  assert.equal(e.postAt.getTime() - NOW.getTime(), MODE_GRACE_DAYS * 86400000);
 });
 
-test('WAIT posts nothing now and schedules the post 7 days out', () => {
+test('NOW posts to the room and names the two-week date', () => {
   const r = machine(base({
     user: user({ state: S.AWAITING_MODE }), activeCircle: [{ phone: BUD }],
-    openEntry: { id: 9, body: 'Coffee at Spyhouse' },
+    openEntry: { id: 9, body: 'Coffee at Spyhouse',
+                 created_at: NOW, chase_at: new Date('2026-09-06T18:00:00Z') },
+  }), sms('now'));
+  assert.equal(r.effects.find((e) => e.type === 'set_entry_mode').mode, 'now');
+  const post = r.effects.find((e) => e.type === 'post_entry');
+  assert.match(post.body, /Coffee at Spyhouse/);
+  assert.doesNotMatch(post.body, /isn't reading/, 'NOW carries no hold notice');
+  assert.match(said(r), /Sun Sep 6/);
+});
+
+test('WAIT also posts to the room, with the hold stated where the room can see it', () => {
+  const r = machine(base({
+    user: user({ state: S.AWAITING_MODE }), activeCircle: [{ phone: BUD }],
+    openEntry: { id: 9, body: 'Coffee at Spyhouse',
+                 created_at: NOW, chase_at: new Date('2026-09-06T18:00:00Z') },
   }), sms('wait'));
-  assert.ok(!kinds(r).includes('post_entry'), 'a held entry must not reach the room');
-  const mode = r.effects.find((e) => e.type === 'set_entry_mode');
-  assert.equal(mode.mode, 'wait');
-  assert.equal(mode.postAt.getTime() - NOW.getTime(), HOLD_DAYS * 86400000);
-  assert.equal(mode.chaseAt, null, 'a held entry is never also chased');
+  const post = r.effects.find((e) => e.type === 'post_entry');
+  assert.ok(post, 'WAIT must still reach the room — the room is the product');
+  assert.match(post.body, /Coffee at Spyhouse/);
+  // He is a member of this room; no code can keep him out of it. The hold is a
+  // norm, so it is addressed to the people who can actually honour it.
+  assert.match(post.body, /Aidan isn't reading this till Sun Aug 30/);
+  assert.match(post.body, /talk among yourselves/);
+  assert.equal(r.effects.find((e) => e.type === 'set_entry_mode').mode, 'wait');
+});
+
+test('both dates hang off the same anchor, so they can never disagree', () => {
+  // Found by driving the simulator: deriving the hold date from the entry's
+  // stored created_at printed a date two weeks in the past, because the store
+  // stamps that column from the real clock and not the engine's injected one.
+  const r = machine(base({
+    now: new Date('2026-08-24T09:00:00Z'),   // he answered the next morning
+    user: user({ state: S.AWAITING_MODE }), activeCircle: [{ phone: BUD }],
+    openEntry: { id: 9, body: 'Coffee at Spyhouse',
+                 created_at: new Date('1999-01-01T00:00:00Z'),   // a liar
+                 chase_at: new Date('2026-09-06T18:00:00Z') },
+  }), sms('wait'));
+  assert.equal(OUTCOME_DAYS - QUIET_DAYS, 7);
+  assert.match(r.effects.find((e) => e.type === 'post_entry').body, /Sun Aug 30/);
+  assert.match(said(r), /till Sun Aug 30/);
+  assert.match(said(r), /Sun Sep 6 for what happened/);
 });
 
 test('an unparseable mode reply re-asks instead of becoming a new entry', () => {
@@ -106,35 +144,43 @@ test('an unparseable mode reply re-asks instead of becoming a new entry', () => 
   assert.equal(said(r), 'NOW or WAIT.');
 });
 
-test('a held entry coming due asks for the outcome before it posts', () => {
+test('an unanswered mode question still puts the entry in the room', () => {
+  // Otherwise the journal reaches nobody AND he is wedged in AWAITING_MODE,
+  // where every later entry comes back as "NOW or WAIT."
   const r = machine(base(), {
     type: 'due_post',
-    entry: { id: 9, body: 'Coffee at Spyhouse', outcome: null },
-    author: user(),
+    entry: { id: 9, body: 'Coffee at Spyhouse', mode: null,
+             chase_at: new Date('2026-09-06T18:00:00Z') },
+    author: user({ state: S.AWAITING_MODE }),
   });
-  assert.ok(!kinds(r).includes('post_entry'));
-  assert.deepEqual(kinds(r), ['mark_outcome_asked', 'set_state']);
-  assert.match(said(r), /what happened/);
+  assert.deepEqual(kinds(r), ['set_entry_mode', 'post_entry', 'set_state']);
+  assert.equal(r.effects[2].state, S.READY, 'and he is un-wedged');
+  assert.match(r.effects[1].body, /Coffee at Spyhouse/);
+  assert.match(said(r), /You never said/);
 });
 
-test('the outcome reply posts entry and outcome together, once', () => {
+test('the two-week question is asked of HIM, never of the room', () => {
+  // His brief: the creator "is allowed to give one update". An earlier build
+  // posted "did you call her?" into the group, which is an interrogation.
+  const r = machine(base(), {
+    type: 'due_chase', entry: { id: 9, body: 'Coffee at Spyhouse' }, author: user(),
+  });
+  assert.deepEqual(kinds(r), ['mark_chased', 'mark_outcome_asked', 'set_state']);
+  assert.ok(!kinds(r).includes('group'), 'nothing is said to the room here');
+  assert.deepEqual(r.replies.map((x) => x.to), [ME]);
+  assert.match(said(r), /Two weeks. Your turn/);
+});
+
+test('his one update joins an entry already in the room, and is not a re-post', () => {
   const r = machine(base({
     user: user({ state: S.AWAITING_OUTCOME }),
-    openEntry: { id: 9, body: 'Coffee at Spyhouse' },
+    openEntry: { id: 9, body: 'Coffee at Spyhouse', outcome_asked_at: NOW },
   }), sms('Called her Thursday. Dinner Saturday.'));
-  const post = r.effects.find((e) => e.type === 'post_entry');
-  assert.match(post.body, /Coffee at Spyhouse/);
-  assert.match(post.body, /Called her Thursday/);
-  assert.equal(r.effects.filter((e) => e.type === 'post_entry').length, 1);
-});
-
-test('the chase lands in the group, not in a DM, and is marked so it fires once', () => {
-  const r = machine(base(), {
-    type: 'due_chase', entry: { id: 9 }, author: user(),
-  });
-  assert.deepEqual(kinds(r), ['mark_chased', 'group']);
-  assert.deepEqual(r.replies, [], 'the chase is public; a private nudge defeats it');
-  assert.match(r.effects[1].body, /did you call her/);
+  assert.ok(!kinds(r).includes('post_entry'), 'the entry was posted two weeks ago');
+  const said_in_room = r.effects.find((e) => e.type === 'group');
+  assert.match(said_in_room.body, /Called her Thursday/);
+  assert.doesNotMatch(said_in_room.body, /Coffee at Spyhouse/, 'no duplicate entry');
+  assert.match(said(r), /one update/);
 });
 
 test('a buddy joining is invited, not added — consent comes from them', () => {

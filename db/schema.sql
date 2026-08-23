@@ -30,9 +30,9 @@ create table if not exists entries (
   mode         text,                           -- now | wait
   outcome      text,
   created_at   timestamptz not null default now(),
-  post_at      timestamptz,                    -- when it enters the room
+  post_at      timestamptz,                    -- deadline for answering NOW/WAIT
   posted_at    timestamptz,
-  chase_at     timestamptz,                    -- when we ask "did you call her"
+  chase_at     timestamptz,                    -- when HE is asked for his one update
   chased_at    timestamptz,
   outcome_asked_at timestamptz
 );

@@ -171,18 +171,20 @@ test('the full loop runs on this channel, NOW mode', async () => {
   assert.match(r.toldTo(ME).at(-1), /NOW or WAIT/);
   await r.dm(ME, 'now');
   assert.match(r.inGroup().at(-1), /Owamni/);
-  await r.jump(7);
-  assert.match(r.inGroup().at(-1), /did you call her/);
+  await r.jump(14);
+  assert.match(r.toldTo(ME).at(-1), /what happened/);
+  await r.dm(ME, 'Called her Thursday.');
+  assert.match(r.inGroup().at(-1), /Called her Thursday/);
 });
 
 test('the full loop runs on this channel, WAIT mode', async () => {
   const r = await setUp(rig());
+  const before = r.inGroup().length;
   await r.dm(ME, 'Drinks at Marvel Bar with the girl from the bookstore, good chemistry');
   await r.dm(ME, 'wait');
-  const held = r.inGroup().length;
-  await r.jump(6);
-  assert.equal(r.inGroup().length, held, 'a held entry leaked early');
-  await r.jump(1);
+  assert.equal(r.inGroup().length, before + 1, 'WAIT must still reach the group');
+  assert.match(r.inGroup().at(-1), /isn't reading this till/);
+  await r.jump(14);
   await r.dm(ME, 'Called her Thursday.');
   assert.match(r.inGroup().at(-1), /Called her Thursday/);
 });

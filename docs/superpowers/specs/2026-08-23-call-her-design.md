@@ -28,17 +28,42 @@ record that carrier rules require anyway.
 
 ## The loop
 
+> **SUPERSEDED, same day.** What this section originally specified is kept below
+> struck through, because it is the most useful thing in this document: it is a
+> record of reading the brief wrong in a way that felt entirely reasonable.
+> Aidan's correction and the shipped design are in `CLAUDE.md` under "The
+> premise, and the way it was got wrong".
+>
+> ~~`WAIT` holds the entry 7 days so nobody talks you out of your decision, then
+> posts entry + outcome together. `WAIT` is the thesis: your friends cannot talk
+> you out of a call you have already made.~~
+>
+> The brief says the opposite. The delay is on **him seeing their replies**
+> ("If you have opted out you will see them 1 week later"), not on **them seeing
+> the entry**. Holding the entry back empties the group chat, and the group chat
+> is the product — "you basically already do this when you text your two
+> friends. Why not make it a group chat?" It also erased the thing he said he
+> was really after: "I wanna fuel creative discourse… small group discussions."
+>
+> The tell I missed: the brief contains **two different delays** — a one-week
+> one on the replies and a two-week one on the update — and I collapsed them
+> into a single seven-day hold on the wrong object.
+
     1. You text your entry.                          (that night)
     2. It asks: NOW or WAIT.
-    3. NOW  -> posts to your circle immediately; day 7 it asks the group
-               whether you called.
-       WAIT -> holds it 7 days so nobody talks you out of your decision,
-               then asks you what happened and posts entry + outcome together.
+    3. The entry goes to the room EITHER WAY. The mode only changes what the
+       room is told:
+         NOW  -> posted plainly; their replies land as they come.
+         WAIT -> posted with the hold stated in the post itself, so the people
+                 who can honour it can see it.
+    4. Day 14 -> it asks HIM, privately, for his one update, and posts his words.
 
-`WAIT` is the thesis: your friends cannot talk you out of a call you have
-already made. `NOW` exists because sometimes you genuinely want the read first.
-The choice is per entry, not a setting — a setting would be a preference, and
-the right answer differs date to date.
+He is a member of that room, so no code can withhold their replies from him;
+the copy says so rather than pretending otherwise. What actually protects the
+decision is the two-week lock on the update — he acts, then reports. Aidan chose
+this on 2026-08-23 over two enforceable alternatives (friends DM the bot for the
+first week; or a room he is not in), both of which cost the single group chat
+that made this worth building.
 
 ## Architecture
 
@@ -50,9 +75,9 @@ mappings (error 50425). Group-MMS SMS participants carry no proxy address and
 the docs do not say how the constraint applies to them, so per-date rooms —
 many concurrent conversations sharing one Twilio number and one participant set
 — bet the product on undocumented routing. One durable room per creator has a
-stable participant set, one number, and no collision surface. `WAIT` is then a
-delayed **post** into an existing room rather than a delayed opening, which is
-the same mechanic with none of the risk.
+stable participant set, one number, and no collision surface. Both modes are
+then just a **post** into an existing room, differing only in what the post
+says.
 
 The cost: all of a creator's dates land in one thread rather than threading per
 date. Acceptable, and closer to the group chat this replaces.
@@ -63,9 +88,10 @@ date. Acceptable, and closer to the group chat this replaces.
 
 `lib/machine.js` is a pure function — `(context, inbound) => {replies, effects}`.
 It touches no network and no clock beyond an injected `now`. Everything that can
-be wrong about this product is a sequencing bug (a chase that fires twice, an
-entry posted to a circle of zero, a delayed post that never lands), and a pure
-core is the only way to test those without waiting seven days. The adapters
+be wrong about this product is a sequencing bug (an update asked for twice, an
+entry posted to a circle of zero, a mode question that goes unanswered and
+strands the entry), and a pure core is the only way to test those without
+waiting two weeks. The adapters
 (`lib/db.js`, `lib/twilio.js`, `lib/scrub.js`) hold all the I/O and no decisions.
 
 ## Rules with teeth
