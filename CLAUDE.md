@@ -4,6 +4,8 @@
 verbatim. This file is the engineering side: what got built from it, why, and
 the rules that have teeth. Claude Code loads it automatically in this repo.
 
+**Incentive Based Dating App / Idea. For men. Call her already.** *(Aidan, [Business Prototypes](https://randomaidan.substack.com/p/business-prototypes), 2026-10-12.)* That line is the vision and wins over anything below.
+
 You already text two friends after a first date. This makes it a group chat, and
 two weeks later asks you what you did.
 

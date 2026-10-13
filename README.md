@@ -1,4 +1,14 @@
+# Call Her
+
 **Live:** https://call-her.vercel.app
+
+**Incentive Based Dating App / Idea. For men. Call her already.**
+
+*(Aidan, [Business Prototypes](https://randomaidan.substack.com/p/business-prototypes), 2026-10-12.)*
+
+---
+
+*His original post, the product brief, verbatim:*
 
 Call Her. A Dating App. 
 
