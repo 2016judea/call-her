@@ -11,7 +11,10 @@ const store = blobStore();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
-  if (req.headers['x-telegram-bot-api-secret-token'] !== process.env.TELEGRAM_SECRET) {
+  // Fail closed when the secret is unset: a missing env var and a missing
+  // header are both undefined, and `undefined !== undefined` let every POST in.
+  const secret = process.env.TELEGRAM_SECRET;
+  if (!secret || req.headers['x-telegram-bot-api-secret-token'] !== secret) {
     return res.status(403).end();
   }
 

@@ -13,10 +13,14 @@ import * as telegram from '../lib/telegram.js';
 const store = blobStore();
 
 export default async function handler(req, res) {
+  // Vercel sends CRON_SECRET as the bearer on every scheduled call; that is the
+  // only thing it documents as authentication. `x-vercel-cron: 1` is a header
+  // any client can set, so it is not a credential. And an UNSET secret must fail
+  // closed: `undefined !== undefined` is false, which let a request with no
+  // Authorization header through whenever the env var was missing.
+  const secret = process.env.CRON_SECRET;
   const bearer = req.headers.authorization?.replace('Bearer ', '');
-  // Vercel Cron signs its own requests; a manual call needs the secret.
-  const fromVercel = req.headers['x-vercel-cron'] === '1';
-  if (!fromVercel && bearer !== process.env.CRON_SECRET) return res.status(401).end();
+  if (!secret || bearer !== secret) return res.status(401).end();
 
   const done = await store.transaction(async (db, channel) => {
     const engine = createEngine({ db, channel, scrub });
